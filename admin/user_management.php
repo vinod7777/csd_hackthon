@@ -193,6 +193,11 @@ unset($_SESSION['message'], $_SESSION['message_type']);
                 <span class="text-sm font-medium">User Management</span>
             </a>
             <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:bg-white/5 hover:text-white transition-colors group"
+                href="reports.php">
+                <span class="material-symbols-outlined text-text-muted group-hover:text-white">assessment</span>
+                <span class="text-sm font-medium">Reports</span>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:bg-white/5 hover:text-white transition-colors group"
                 href="?logout=1">
                 <span class="material-symbols-outlined text-text-muted group-hover:text-white">logout</span>
                 <span class="text-sm font-medium">Logout</span>
@@ -220,6 +225,18 @@ unset($_SESSION['message'], $_SESSION['message_type']);
                 </div>
                 <?php endif; ?>
 
+                <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-end justify-between bg-surface-dark/30 p-4 rounded-xl border border-border-dark/30">
+                    <div class="w-full lg:w-96">
+                        <label class="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wider">Search Users</label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="material-symbols-outlined text-text-muted group-focus-within:text-white transition-colors">search</span>
+                            </div>
+                            <input class="block w-full pl-10 pr-3 py-2.5 bg-surface-dark border border-border-dark/30 rounded-lg text-white placeholder-text-muted/50 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-all" placeholder="Search by Name, Email, Roll No..." type="text" id="searchInput" onkeyup="filterTable()" />
+                        </div>
+                    </div>
+                </div>
+
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse" id="teamsTable">
                             <thead>
@@ -240,7 +257,7 @@ unset($_SESSION['message'], $_SESSION['message_type']);
                                 </tr>
                                 <?php else: ?>
                                 <?php foreach ($teams as $idx => $team): ?>
-                                <tr class="hover:bg-surface-dark transition-colors group cursor-pointer" onclick="window.location.href='team_details.php?id=<?php echo $team['id']; ?>'">
+                                <tr class="hover:bg-surface-dark transition-colors group cursor-pointer" onclick="window.location.href='team_details.php?id=<?php echo $team['id']; ?>'" data-search="<?php echo htmlspecialchars(strtolower($team['team_name'] . ' ' . $team['leader_name'] . ' ' . $team['email'] . ' ' . $team['roll_number'])); ?>">
                                     <td class="px-6 py-4 text-sm text-text-muted text-center font-mono">
                                         <?php echo str_pad($team['id'], 2, '0', STR_PAD_LEFT); ?>
                                     </td>
@@ -345,6 +362,20 @@ unset($_SESSION['message'], $_SESSION['message_type']);
     </div>
 
     <script>
+    function filterTable() {
+        const input = document.getElementById('searchInput').value.toLowerCase();
+        const rows = document.getElementById('teamsTable').getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+        for (let row of rows) {
+            const searchData = row.getAttribute('data-search');
+            if (searchData && searchData.includes(input)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        }
+    }
+
     function openEditModal(team) {
         document.getElementById('edit_team_id').value = team.id;
         document.getElementById('edit_team_name').value = team.team_name;

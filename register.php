@@ -10,8 +10,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $roll_number  = trim($_POST['roll-number'] ?? '');
     $gender       = $_POST['gender'] ?? '';
     $email        = trim($_POST['email'] ?? '');
+    $phone_number = trim($_POST['phone-number'] ?? '');
     $password     = $_POST['password'] ?? '';
     $residence    = $_POST['residence'] ?? '';
+    $address      = trim($_POST['address'] ?? '');
 
     if ($team_name === '') {
         $errors[] = 'Team name is required.';
@@ -28,11 +30,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = 'A valid email address is required.';
     }
+    if ($phone_number === '') {
+        $errors[] = 'Phone number is required.';
+    }
     if (strlen($password) < 6) {
         $errors[] = 'Password must be at least 6 characters.';
     }
     if (!in_array($residence, ['day-scholar', 'hostel'], true)) {
         $errors[] = 'Please select your residence type.';
+    }
+    if ($address === '') {
+        $errors[] = 'Address is required.';
     }
 
     if (empty($errors)) {
@@ -53,12 +61,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($errors)) {
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
-        $insertSql = 'INSERT INTO teams (team_name, leader_name, roll_number, gender, email, password_hash, residence) VALUES (?, ?, ?, ?, ?, ?, ?)';
+        $insertSql = 'INSERT INTO teams (team_name, leader_name, roll_number, gender, email, phone_number, password_hash, residence, address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
         if ($stmt = $mysqli->prepare($insertSql)) {
-            $stmt->bind_param('sssssss', $team_name, $leader_name, $roll_number, $gender, $email, $password_hash, $residence);
+            $stmt->bind_param('sssssssss', $team_name, $leader_name, $roll_number, $gender, $email, $phone_number, $password_hash, $residence, $address);
             if ($stmt->execute()) {
                 $success = 'Registration successful! Your team has been registered for the Webathon.';
-                $team_name = $leader_name = $roll_number = $gender = $email = $password = $residence = '';
+                $team_name = $leader_name = $roll_number = $gender = $email = $phone_number = $password = $residence = $address = '';
             } else {
                 $errors[] = 'Failed to save registration. Please try again later.';
             }
@@ -313,6 +321,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                         </div>
                         <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1" for="phone-number">Phone Number</label>
+                            <div class="relative rounded-md shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="material-icons text-gray-400 text-sm">phone</span>
+                                </div>
+                                <input
+                                    class="block w-full pl-10 sm:text-sm border-gray-600 rounded-md focus:ring-primary focus:border-primary bg-gray-800 text-white placeholder-gray-500 transition-colors"
+                                    id="phone-number" name="phone-number" placeholder="Enter phone number" required type="tel"
+                                    value="<?php echo htmlspecialchars($phone_number ?? '', ENT_QUOTES, 'UTF-8'); ?>" />
+                            </div>
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-300 mb-1" for="password">Password</label>
                             <div class="relative rounded-md shadow-sm">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -343,6 +363,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         <?php echo (isset($residence) && $residence === 'hostel') ? 'selected' : ''; ?>>
                                         Hostel</option>
                                 </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1" for="address">Address</label>
+                            <div class="relative rounded-md shadow-sm">
+                                <div class="absolute top-3 left-0 pl-3 flex items-start pointer-events-none">
+                                    <span class="material-icons text-gray-400 text-sm">home</span>
+                                </div>
+                                <textarea
+                                    class="block w-full pl-10 sm:text-sm border-gray-600 rounded-md focus:ring-primary focus:border-primary bg-gray-800 text-white placeholder-gray-500 transition-colors"
+                                    id="address" name="address" placeholder="Enter full address" required rows="3"><?php echo htmlspecialchars($address ?? '', ENT_QUOTES, 'UTF-8'); ?></textarea>
                             </div>
                         </div>
                         <div class="pt-4">

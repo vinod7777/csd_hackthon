@@ -28,6 +28,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             if ($stmt->execute()) {
                 $message = $status ? 'Problem Statements are now RELEASED!' : 'Problem Statements are now HIDDEN!';
                 $message_type = 'success';
+                
+                if (isset($_POST['ajax'])) {
+                    echo json_encode(['status' => 'success', 'message' => $message]);
+                    exit;
+                }
             } else {
                 $message = 'Failed to update release status.';
                 $message_type = 'error';
@@ -135,6 +140,7 @@ if ($result) {
         rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script id="tailwind-config">
     tailwind.config = {
@@ -188,6 +194,13 @@ if ($result) {
         .text-text-muted { color: #555 !important; }
         header { display: none !important; }
     }
+    @keyframes spin-3d {
+        from { transform: rotateY(0deg); }
+        to { transform: rotateY(360deg); }
+    }
+    .animate-spin-3d {
+        animation: spin-3d 0.6s linear infinite;
+    }
     </style>
 </head>
 
@@ -226,6 +239,11 @@ if ($result) {
                 <span class="text-sm font-medium">User Management</span>
             </a>
             <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:bg-white/5 hover:text-white transition-colors group"
+                href="reports.php">
+                <span class="material-symbols-outlined text-text-muted group-hover:text-white">assessment</span>
+                <span class="text-sm font-medium">Reports</span>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:bg-white/5 hover:text-white transition-colors group"
                 href="?logout=1">
                 <span class="material-symbols-outlined text-text-muted group-hover:text-white">logout</span>
                 <span class="text-sm font-medium">Logout</span>
@@ -262,25 +280,34 @@ if ($result) {
                                 <p class="text-text-muted text-sm">Toggle to make problem statements visible to
                                     participants</p>
                             </div>
-                            <form method="POST" class="inline">
-                                <input type="hidden" name="action" value="toggle_release" />
-                                <?php 
-                                $ps_released = false;
-                                $check_sql = "SELECT setting_value FROM admin_settings WHERE setting_key = 'release_ps' LIMIT 1";
-                                $result = $mysqli->query($check_sql);
-                                if ($result && $row = $result->fetch_assoc()) {
-                                    $ps_released = ($row['setting_value'] === '1' || $row['setting_value'] === 'true');
-                                }
-                                ?>
-                                <input type="hidden" name="release_status"
-                                    value="<?php echo $ps_released ? '0' : '1'; ?>" />
-                                <button type="submit"
-                                    class="px-6 py-2.5 rounded-lg <?php echo $ps_released ? 'bg-emerald-900/40 border border-emerald-500 text-emerald-400 hover:bg-emerald-900/60' : 'bg-red-900/40 border border-red-500 text-red-400 hover:bg-red-900/60'; ?> font-medium transition-colors flex items-center gap-2">
-                                    <span class="material-symbols-outlined"
-                                        style="font-size:20px;"><?php echo $ps_released ? 'check_circle' : 'cancel'; ?></span>
-                                    <?php echo $ps_released ? 'Released' : 'Not Released'; ?>
+                            <?php 
+                            $ps_released = false;
+                            $check_sql = "SELECT setting_value FROM admin_settings WHERE setting_key = 'release_ps' LIMIT 1";
+                            $result = $mysqli->query($check_sql);
+                            if ($result && $row = $result->fetch_assoc()) {
+                                $ps_released = ($row['setting_value'] === '1' || $row['setting_value'] === 'true');
+                            }
+                            ?>
+                            <?php if ($ps_released): ?>
+                                <div class="flex items-center gap-3">
+                                    <button type="button" disabled class="px-6 py-2.5 rounded-lg bg-emerald-600 border border-emerald-500 text-white font-bold flex items-center gap-2 cursor-not-allowed opacity-90 shadow-lg shadow-emerald-900/20">
+                                        <span class="material-symbols-outlined" style="font-size:20px;">check_circle</span>
+                                        Released
+                                    </button>
+                                    <form method="POST" onsubmit="return confirm('Are you sure you want to hide problem statements?');">
+                                        <input type="hidden" name="action" value="toggle_release" />
+                                        <input type="hidden" name="release_status" value="0" />
+                                        <button type="submit" class="px-4 py-2.5 rounded-lg bg-red-500/10 border border-red-500/50 text-red-400 hover:bg-red-500/20 font-medium flex items-center gap-2 transition-colors" title="Stop/Hide Problem Statements">
+                                            <span class="material-symbols-outlined">block</span> Stop
+                                        </button>
+                                    </form>
+                                </div>
+                            <?php else: ?>
+                                <button type="button" onclick="startReleaseSequence()" class="px-6 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-all flex items-center gap-2 shadow-lg shadow-emerald-900/20 hover:shadow-emerald-500/20 hover:-translate-y-0.5">
+                                    <span class="material-symbols-outlined" style="font-size:20px;">rocket_launch</span>
+                                    Release
                                 </button>
-                            </form>
+                            <?php endif; ?>
                         </div>
                     </div>
 
@@ -430,7 +457,114 @@ if ($result) {
             sidebar.classList.toggle('hidden');
         });
     }
+
+    function startReleaseSequence() {
+        const overlay = document.getElementById('releaseOverlay');
+        const timer = document.getElementById('releaseTimer');
+        const success = document.getElementById('releaseSuccess');
+        const timerCount = document.getElementById('timerCount');
+        const logo = timer.querySelector('img');
+        
+        overlay.classList.remove('hidden');
+        timer.classList.remove('hidden');
+        
+        // Reset state
+        if(timerCount) {
+            timerCount.classList.remove('hidden');
+            timerCount.textContent = '5';
+        }
+        if(logo) logo.classList.add('animate-spin-3d');
+        success.classList.add('hidden');
+        
+        // Confetti from two sides
+        const duration = 5000;
+        const end = Date.now() + duration;
+
+        (function frame() {
+            confetti({
+                particleCount: 7,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0 },
+                colors: ['#443c68', '#635985', '#ffffff']
+            });
+            confetti({
+                particleCount: 7,
+                angle: 120,
+                spread: 55,
+                origin: { x: 1 },
+                colors: ['#443c68', '#635985', '#ffffff']
+            });
+
+            if (Date.now() < end) {
+                requestAnimationFrame(frame);
+            }
+        }());
+        
+        let count = 5;
+        if(timerCount) timerCount.textContent = count;
+        
+        const interval = setInterval(() => {
+            count--;
+            if (count > 0) {
+                if(timerCount) timerCount.textContent = count;
+            } else {
+                clearInterval(interval);
+                
+                // Timer ended: Hide count, stop spin
+                if(timerCount) timerCount.classList.add('hidden');
+                if(logo) logo.classList.remove('animate-spin-3d');
+                
+                // Trigger AJAX
+                const formData = new FormData();
+                formData.append('action', 'toggle_release');
+                formData.append('release_status', '1');
+                formData.append('ajax', '1');
+                
+                fetch('manage_ps.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Show logo for 2 seconds then show success
+                    setTimeout(() => {
+                        timer.classList.add('hidden');
+                        success.classList.remove('hidden');
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error(err);
+                    timer.classList.add('hidden');
+                    success.classList.remove('hidden');
+                });
+            }
+        }, 1000);
+    }
     </script>
+
+    <!-- Release Animation Overlay -->
+    <div id="releaseOverlay" class="fixed inset-0 z-[100] bg-black/95 hidden flex flex-col items-center justify-center backdrop-blur-sm">
+        <!-- Timer -->
+        <div id="releaseTimer" class="hidden flex flex-col items-center justify-center">
+            <img src="../assets/image/25.png" class="w-48 h-48 md:w-64 md:h-64 object-contain animate-spin-3d mb-8 drop-shadow-[0_0_50px_rgba(59,130,246,0.6)]">
+            <div id="timerCount" class="text-[100px] md:text-[150px] font-black text-white font-display tracking-tighter animate-pulse">
+                5
+            </div>
+        </div>
+
+        <!-- Success Modal -->
+        <div id="releaseSuccess" class="hidden bg-surface-dark border border-emerald-500/50 p-8 rounded-2xl shadow-2xl text-center max-w-md mx-4 transform scale-100 transition-all">
+            <div class="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6 ring-4 ring-emerald-500/10">
+                <span class="material-symbols-outlined text-5xl text-emerald-400">rocket_launch</span>
+            </div>
+            <h3 class="text-3xl font-bold text-white mb-2">Hackathon Started!</h3>
+            <p class="text-gray-300 mb-8">Problem statements are now live for all participants. Good luck!</p>
+            <button onclick="window.location.reload()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-colors shadow-lg shadow-emerald-600/20">
+                Continue to Dashboard
+            </button>
+        </div>
+    </div>
 </body>
 
 </html>

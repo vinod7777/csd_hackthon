@@ -28,13 +28,13 @@ if (!$team) {
 
 // Fetch team members
 $team_members = [];
-$members_sql = 'SELECT member_name FROM team_members WHERE team_id = ? ORDER BY created_at ASC';
+$members_sql = 'SELECT * FROM team_members WHERE team_id = ? ORDER BY created_at ASC';
 if ($stmt = $mysqli->prepare($members_sql)) {
     $stmt->bind_param('i', $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
     while ($row = $result->fetch_assoc()) {
-        $team_members[] = $row['member_name'];
+        $team_members[] = $row;
     }
     $stmt->close();
 }
@@ -101,6 +101,7 @@ $team_id_display = 'AI-WEB-' . str_pad($team['id'], 3, '0', STR_PAD_LEFT);
         .no-print { display: none !important; }
         .print-bg-white { background-color: white !important; color: black !important; border: 1px solid #ddd !important; box-shadow: none !important; }
         .print-text-black { color: black !important; }
+        main { margin-left: 0 !important; padding: 0 !important; width: 100% !important; }
     }
     </style>
 </head>
@@ -145,7 +146,7 @@ $team_id_display = 'AI-WEB-' . str_pad($team['id'], 3, '0', STR_PAD_LEFT);
         </nav>
     </aside>
 
-    <main class="flex-1 md:ml-64 p-6 md:p-12 transition-all duration-200 w-full">
+    <main class="flex-1 md:ml-64 p-6 md:p-12 transition-all duration-200 min-w-0">
         <div class="flex justify-between items-center mb-8 no-print">
              <h1 class="text-4xl font-display font-bold text-white tracking-tight">Project Report</h1>
              <button onclick="window.print()" class="bg-primary hover:bg-secondary text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
@@ -173,15 +174,19 @@ $team_id_display = 'AI-WEB-' . str_pad($team['id'], 3, '0', STR_PAD_LEFT);
                         <p class="text-white print-text-black font-medium text-lg"><?php echo htmlspecialchars($team['leader_name']); ?></p>
                         <p class="text-sm text-gray-200 print-text-black"><?php echo htmlspecialchars($team['email']); ?></p>
                         <p class="text-sm text-gray-200 print-text-black"><?php echo htmlspecialchars($team['roll_number']); ?></p>
+                        <p class="text-sm text-gray-200 print-text-black"><?php echo htmlspecialchars($team['phone_number'] ?? ''); ?></p>
+                        <p class="text-sm text-gray-200 print-text-black break-words"><?php echo nl2br(htmlspecialchars($team['address'] ?? '')); ?></p>
                     </div>
                     <div>
                         <p class="text-xs text-gray-300 uppercase font-bold mb-1">Team Members</p>
                         <?php if (!empty($team_members)): ?>
-                            <ul class="list-disc list-inside text-white print-text-black">
+                            <div class="space-y-3">
                                 <?php foreach ($team_members as $member): ?>
-                                    <li><?php echo htmlspecialchars($member); ?></li>
+                                    <div class="bg-white/5 p-3 rounded-lg border border-white/10 print:border-gray-300 print:bg-white break-inside-avoid">
+                                        <p class="text-white print-text-black font-bold text-sm"><?php echo htmlspecialchars($member['member_name']); ?></p>
+                                    </div>
                                 <?php endforeach; ?>
-                            </ul>
+                            </div>
                         <?php else: ?>
                             <p class="text-gray-400 italic">No additional members</p>
                         <?php endif; ?>
@@ -197,7 +202,7 @@ $team_id_display = 'AI-WEB-' . str_pad($team['id'], 3, '0', STR_PAD_LEFT);
                             <span class="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded text-xs font-bold print-text-black">PS-<?php echo $selected_ps['sno']; ?></span>
                             <h4 class="text-xl font-bold text-white print-text-black"><?php echo htmlspecialchars($selected_ps['stmt_name']); ?></h4>
                         </div>
-                        <p class="text-gray-200 leading-relaxed mt-2 print-text-black"><?php echo nl2br(htmlspecialchars($selected_ps['description'])); ?></p>
+                        <p class="text-gray-200 leading-relaxed mt-2 print-text-black break-words whitespace-pre-wrap"><?php echo htmlspecialchars($selected_ps['description']); ?></p>
                     </div>
                 <?php else: ?>
                     <p class="text-yellow-400 italic">No problem statement selected yet.</p>

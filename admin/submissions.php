@@ -202,6 +202,11 @@ if ($stmt) {
                 <span class="text-sm font-medium">User Management</span>
             </a>
             <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:bg-white/5 hover:text-white transition-colors group"
+                href="reports.php">
+                <span class="material-symbols-outlined text-text-muted group-hover:text-white">assessment</span>
+                <span class="text-sm font-medium">Reports</span>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:bg-white/5 hover:text-white transition-colors group"
                 href="?logout=1">
                 <span class="material-symbols-outlined text-text-muted group-hover:text-white">logout</span>
                 <span class="text-sm font-medium">Logout</span>

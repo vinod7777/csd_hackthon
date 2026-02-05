@@ -213,33 +213,46 @@ $initials = substr(strtoupper($initials), 0, 2);
                         <?php if (empty($members)): ?>
                             <p class="text-text-muted italic text-center py-4">No additional team members.</p>
                         <?php else: ?>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left">
-                                    <thead>
-                                        <tr class="text-xs text-text-muted uppercase border-b border-border-dark/30">
-                                            <th class="pb-3 font-bold">Name</th>
-                                            <th class="pb-3 font-bold">Roll No</th>
-                                            <th class="pb-3 font-bold">Email</th>
-                                            <th class="pb-3 font-bold">Phone</th>
-                                            <th class="pb-3 font-bold">Residence</th>
-                                            <th class="pb-3 font-bold">Address</th>
-                                            <th class="pb-3 font-bold">Joined</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-border-dark/30">
-                                        <?php foreach ($members as $member): ?>
-                                        <tr>
-                                            <td class="py-3 text-white font-medium"><?php echo htmlspecialchars($member['member_name']); ?></td>
-                                            <td class="py-3 text-text-muted font-mono"><?php echo htmlspecialchars($member['roll_number'] ?? '-'); ?></td>
-                                            <td class="py-3 text-text-muted"><?php echo htmlspecialchars($member['email'] ?? '-'); ?></td>
-                                            <td class="py-3 text-text-muted"><?php echo htmlspecialchars($member['phone_number'] ?? '-'); ?></td>
-                                            <td class="py-3 text-text-muted capitalize"><?php echo htmlspecialchars($member['residence'] ?? '-'); ?></td>
-                                            <td class="py-3 text-text-muted max-w-xs truncate" title="<?php echo htmlspecialchars($member['address'] ?? ''); ?>"><?php echo htmlspecialchars($member['address'] ?? '-'); ?></td>
-                                            <td class="py-3 text-text-muted"><?php echo date('M j, Y', strtotime($member['created_at'])); ?></td>
-                                        </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <?php foreach ($members as $member): ?>
+                                <div class="bg-background-dark/50 border border-border-dark/30 rounded-xl p-5 flex flex-col gap-4 hover:border-primary/50 transition-colors">
+                                    <div class="flex items-center gap-4">
+                                        <div class="h-12 w-12 rounded-full bg-secondary/20 flex items-center justify-center text-secondary font-bold text-lg">
+                                            <?php echo htmlspecialchars(strtoupper(substr($member['member_name'], 0, 2))); ?>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-white text-lg"><?php echo htmlspecialchars($member['member_name']); ?></h4>
+                                            <p class="text-xs text-primary font-bold uppercase tracking-wider">Team Member</p>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 text-sm border-t border-border-dark/30 pt-4">
+                                        <div>
+                                            <p class="text-xs text-text-muted uppercase font-bold">Roll Number</p>
+                                            <p class="text-white font-mono"><?php echo htmlspecialchars($member['roll_number'] ?? '-'); ?></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-text-muted uppercase font-bold">Email</p>
+                                            <p class="text-white truncate" title="<?php echo htmlspecialchars($member['email'] ?? ''); ?>"><?php echo htmlspecialchars($member['email'] ?? '-'); ?></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-text-muted uppercase font-bold">Phone</p>
+                                            <p class="text-white"><?php echo htmlspecialchars($member['phone_number'] ?? '-'); ?></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-text-muted uppercase font-bold">Residence</p>
+                                            <p class="text-white capitalize"><?php echo htmlspecialchars($member['residence'] ?? '-'); ?></p>
+                                        </div>
+                                        <div class="sm:col-span-2">
+                                            <p class="text-xs text-text-muted uppercase font-bold">Address</p>
+                                            <p class="text-white break-words"><?php echo htmlspecialchars($member['address'] ?? '-'); ?></p>
+                                        </div>
+                                        <div class="sm:col-span-2">
+                                            <p class="text-xs text-text-muted uppercase font-bold">Joined</p>
+                                            <p class="text-white"><?php echo date('M j, Y g:i A', strtotime($member['created_at'])); ?></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <?php endforeach; ?>
                             </div>
                         <?php endif; ?>
                     </div>

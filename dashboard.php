@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_id'])) {
 
 
 $user_id = $_SESSION['user_id'];
-$sql = 'SELECT id, team_name, leader_name, roll_number, email, created_at FROM teams WHERE id = ? LIMIT 1';
+$sql = 'SELECT id, team_name, leader_name, roll_number, email, phone_number, address, created_at FROM teams WHERE id = ? LIMIT 1';
 $team = null;
 
 if ($stmt = $mysqli->prepare($sql)) {
@@ -385,6 +385,10 @@ if ($res = $mysqli->query($sub_check_sql)) {
                             <?php echo htmlspecialchars($team['roll_number'], ENT_QUOTES, 'UTF-8'); ?></p>
                         <p class="text-sm text-muted-dark">
                             <?php echo htmlspecialchars($team['email'], ENT_QUOTES, 'UTF-8'); ?></p>
+                        <p class="text-sm text-muted-dark">
+                            <?php echo htmlspecialchars($team['phone_number'] ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
+                        <p class="text-sm text-muted-dark mt-1 max-w-md">
+                            <?php echo htmlspecialchars($team['address'] ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
                     </div>
                     <div class="md:ml-auto flex gap-2">
                         <button
