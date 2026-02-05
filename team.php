@@ -13,7 +13,13 @@ $message_type = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['add_member'])) {
         $member_name = trim($_POST['member_name'] ?? '');
-        if (!empty($member_name)) {
+        $member_roll = trim($_POST['member_roll'] ?? '');
+        $member_email = trim($_POST['member_email'] ?? '');
+        $member_phone = trim($_POST['member_phone'] ?? '');
+        $member_residence = $_POST['member_residence'] ?? '';
+        $member_address = trim($_POST['member_address'] ?? '');
+
+        if (!empty($member_name) && !empty($member_roll) && !empty($member_email) && !empty($member_phone) && !empty($member_residence)) {
             $user_id = $_SESSION['user_id'];
             
             $count_sql = 'SELECT COUNT(*) as count FROM team_members WHERE team_id = ?';
@@ -31,9 +37,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message = 'Maximum team size reached (5 members including team leader).';
                 $message_type = 'error';
             } else {
-                $insert_sql = 'INSERT INTO team_members (team_id, member_name) VALUES (?, ?)';
+                $insert_sql = 'INSERT INTO team_members (team_id, member_name, roll_number, email, phone_number, residence, address) VALUES (?, ?, ?, ?, ?, ?, ?)';
                 if ($stmt = $mysqli->prepare($insert_sql)) {
-                    $stmt->bind_param('is', $user_id, $member_name);
+                    $stmt->bind_param('issssss', $user_id, $member_name, $member_roll, $member_email, $member_phone, $member_residence, $member_address);
                     if ($stmt->execute()) {
                         header('Location: team.php?msg=added');
                         exit;
@@ -45,11 +51,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
         } else {
-            $message = 'Please enter a team member name.';
+            $message = 'Please fill in all required fields for the team member.';
             $message_type = 'error';
         }
     }
     
+    if (isset($_POST['update_member'])) {
+        $member_id = intval($_POST['member_id'] ?? 0);
+        $member_name = trim($_POST['member_name'] ?? '');
+        $member_roll = trim($_POST['member_roll'] ?? '');
+        $member_email = trim($_POST['member_email'] ?? '');
+        $member_phone = trim($_POST['member_phone'] ?? '');
+        $member_residence = $_POST['member_residence'] ?? '';
+        $member_address = trim($_POST['member_address'] ?? '');
+
+        if ($member_id > 0 && !empty($member_name) && !empty($member_roll) && !empty($member_email) && !empty($member_phone) && !empty($member_residence)) {
+            $user_id = $_SESSION['user_id'];
+            $update_sql = 'UPDATE team_members SET member_name=?, roll_number=?, email=?, phone_number=?, residence=?, address=? WHERE id=? AND team_id=?';
+            if ($stmt = $mysqli->prepare($update_sql)) {
+                $stmt->bind_param('ssssssii', $member_name, $member_roll, $member_email, $member_phone, $member_residence, $member_address, $member_id, $user_id);
+                if ($stmt->execute()) {
+                    header('Location: team.php?msg=updated');
+                    exit;
+                }
+                $stmt->close();
+            }
+        }
+    }
+
     if (isset($_POST['remove_member'])) {
         $member_id = intval($_POST['member_id'] ?? 0);
         if ($member_id > 0) {
@@ -77,6 +106,9 @@ if (isset($_GET['msg'])) {
     } elseif ($_GET['msg'] === 'removed') {
         $message = 'Team member removed successfully!';
         $message_type = 'success';
+    } elseif ($_GET['msg'] === 'updated') {
+        $message = 'Team member updated successfully!';
+        $message_type = 'success';
     }
 }
 
@@ -100,7 +132,7 @@ if (!$team) {
 
 
 $team_members = [];
-$members_sql = 'SELECT id, member_name FROM team_members WHERE team_id = ? ORDER BY created_at ASC';
+$members_sql = 'SELECT * FROM team_members WHERE team_id = ? ORDER BY created_at ASC';
 if ($stmt = $mysqli->prepare($members_sql)) {
     $stmt->bind_param('i', $user_id);
     $stmt->execute();
@@ -169,6 +201,7 @@ $initials = strtoupper(substr($team['leader_name'], 0, 1) . substr(explode(' ', 
                 <span class="material-icons-outlined text-xl">dashboard</span>
                 <span>Dashboard</span>
             </a>
+           
             <a class="flex items-center space-x-3 px-4 py-3 rounded-xl bg-primary/20 text-white font-semibold"
                 href="team.php">
                 <span class="material-icons-outlined text-xl">group</span>
@@ -183,6 +216,16 @@ $initials = strtoupper(substr($team['leader_name'], 0, 1) . substr(explode(' ', 
                 href="submit.php">
                 <span class="material-icons-outlined text-xl">cloud_upload</span>
                 <span>Submission</span>
+            </a>
+             <a class="flex items-center space-x-3 px-4 py-3 rounded-xl text-muted-dark hover:bg-primary/10 transition-all"
+                href="profile.php">
+                <span class="material-icons-outlined text-xl">person</span>
+                <span>Profile</span>
+            </a>
+            <a class="flex items-center space-x-3 px-4 py-3 rounded-xl text-muted-dark hover:bg-primary/10 transition-all"
+                href="report.php">
+                <span class="material-icons-outlined text-xl">assessment</span>
+                <span>Report</span>
             </a>
             <a class="flex items-center space-x-3 px-4 py-3 rounded-xl text-muted-dark hover:bg-primary/10 transition-all"
                 href="logout.php">
@@ -199,7 +242,7 @@ $initials = strtoupper(substr($team['leader_name'], 0, 1) . substr(explode(' ', 
                 <div>
                     <p class="text-sm font-bold text-white">
                         <?php echo htmlspecialchars($team['team_name'], ENT_QUOTES, 'UTF-8'); ?></p>
-                    <p class="text-[10px] text-muted-dark uppercase tracking-tighter">Team Leader</p>
+                    <p class="text-[10px] text-white uppercase tracking-tighter">Team Leader</p>
                 </div>
             </div>
         </div>
@@ -241,20 +284,60 @@ $initials = strtoupper(substr($team['leader_name'], 0, 1) . substr(explode(' ', 
             </div>
 
             <div class="bg-surface-dark border border-primary/30 rounded-xl p-6">
-                <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2" id="form_title">
                     <span class="material-icons-outlined text-primary">person_add</span>
                     Add Team Member
                 </h3>
-                <form method="POST" class="flex gap-3">
-                    <input type="text" name="member_name" placeholder="Enter team member name" required
-                        class="flex-1 px-4 py-2 bg-gray-800 border border-primary/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                        maxlength="100" <?php echo (count($team_members) >= 4) ? 'disabled' : ''; ?> />
-                    <button type="submit" name="add_member"
-                        class="bg-primary hover:bg-secondary text-white px-6 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2"
-                        <?php echo (count($team_members) >= 4) ? 'disabled' : ''; ?>>
-                        <span class="material-icons-outlined text-sm">add</span>
-                        Add Member
-                    </button>
+                <form method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="hidden" name="member_id" id="member_id">
+                    <div class="col-span-1">
+                        <label class="block text-sm font-medium text-muted-dark mb-1">Name</label>
+                        <input type="text" name="member_name" placeholder="Full Name" required
+                            class="w-full px-4 py-2 bg-gray-800 border border-primary/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                            maxlength="100" <?php echo (count($team_members) >= 4) ? 'disabled' : ''; ?> />
+                    </div>
+                    <div class="col-span-1">
+                        <label class="block text-sm font-medium text-muted-dark mb-1">Roll Number</label>
+                        <input type="text" name="member_roll" placeholder="Roll Number" required
+                            class="w-full px-4 py-2 bg-gray-800 border border-primary/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                            <?php echo (count($team_members) >= 4) ? 'disabled' : ''; ?> />
+                    </div>
+                    <div class="col-span-1">
+                        <label class="block text-sm font-medium text-muted-dark mb-1">Email (Gmail)</label>
+                        <input type="email" name="member_email" placeholder="Email Address" required
+                            class="w-full px-4 py-2 bg-gray-800 border border-primary/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                            <?php echo (count($team_members) >= 4) ? 'disabled' : ''; ?> />
+                    </div>
+                    <div class="col-span-1">
+                        <label class="block text-sm font-medium text-muted-dark mb-1">Phone Number</label>
+                        <input type="tel" name="member_phone" placeholder="Phone Number" required
+                            class="w-full px-4 py-2 bg-gray-800 border border-primary/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                            <?php echo (count($team_members) >= 4) ? 'disabled' : ''; ?> />
+                    </div>
+                    <div class="col-span-1">
+                        <label class="block text-sm font-medium text-muted-dark mb-1">Residence</label>
+                        <select name="member_residence" required class="w-full px-4 py-2 bg-gray-800 border border-primary/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" <?php echo (count($team_members) >= 4) ? 'disabled' : ''; ?>>
+                            <option value="" disabled selected>Select Residence</option>
+                            <option value="day-scholar">Day Scholar</option>
+                            <option value="hostel">Hostel</option>
+                        </select>
+                    </div>
+                    <div class="col-span-1 md:col-span-2">
+                        <label class="block text-sm font-medium text-muted-dark mb-1">Address</label>
+                        <textarea name="member_address" placeholder="Full Address" required rows="2" class="w-full px-4 py-2 bg-gray-800 border border-primary/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" <?php echo (count($team_members) >= 4) ? 'disabled' : ''; ?>></textarea>
+                    </div>
+                    <div class="col-span-1 md:col-span-2 flex gap-3">
+                        <button type="submit" name="add_member" id="submit_btn"
+                            class="flex-1 bg-primary hover:bg-secondary text-white px-6 py-2 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+                            <?php echo (count($team_members) >= 4) ? 'disabled' : ''; ?>>
+                            <span class="material-icons-outlined text-sm">add</span>
+                            Add Member
+                        </button>
+                        <button type="button" id="cancel_btn" onclick="cancelEdit()"
+                            class="hidden px-6 py-2 rounded-lg border border-primary/30 text-muted-dark hover:text-white hover:bg-surface-dark transition-colors">
+                            Cancel
+                        </button>
+                    </div>
                 </form>
                 <p class="text-xs text-muted-dark mt-2">Maximum 5 members per team (including team leader). Current:
                     <?php echo count($team_members) + 1; ?>/5</p>
@@ -274,8 +357,8 @@ $initials = strtoupper(substr($team['leader_name'], 0, 1) . substr(explode(' ', 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <?php foreach ($team_members as $member): ?>
                     <div
-                        class="bg-gray-800/50 border border-primary/30 rounded-xl p-4 flex items-center justify-between hover:border-primary/50 transition-colors">
-                        <div class="flex items-center space-x-4 flex-1">
+                        class="bg-gray-800/50 border border-primary/30 rounded-xl p-4 flex items-start justify-between hover:border-primary/50 transition-colors">
+                        <div class="flex items-start space-x-4 flex-1">
                             <div
                                 class="h-14 w-14 rounded-lg bg-secondary/20 flex items-center justify-center text-secondary font-bold text-lg">
                                 <?php echo htmlspecialchars(strtoupper(substr($member['member_name'], 0, 2)), ENT_QUOTES, 'UTF-8'); ?>
@@ -284,17 +367,31 @@ $initials = strtoupper(substr($team['leader_name'], 0, 1) . substr(explode(' ', 
                                 <h4 class="font-bold text-white">
                                     <?php echo htmlspecialchars($member['member_name'], ENT_QUOTES, 'UTF-8'); ?></h4>
                                 <p class="text-xs text-primary font-semibold uppercase tracking-tight">Team Member</p>
+                                <div class="mt-2 space-y-1 text-xs text-muted-dark">
+                                    <p><span class="font-semibold text-gray-400">Roll:</span> <?php echo htmlspecialchars($member['roll_number'] ?? 'N/A', ENT_QUOTES, 'UTF-8'); ?></p>
+                                    <p><span class="font-semibold text-gray-400">Email:</span> <?php echo htmlspecialchars($member['email'] ?? 'N/A', ENT_QUOTES, 'UTF-8'); ?></p>
+                                    <p><span class="font-semibold text-gray-400">Phone:</span> <?php echo htmlspecialchars($member['phone_number'] ?? 'N/A', ENT_QUOTES, 'UTF-8'); ?></p>
+                                    <p><span class="font-semibold text-gray-400">Residence:</span> <?php echo htmlspecialchars(ucfirst($member['residence'] ?? 'N/A'), ENT_QUOTES, 'UTF-8'); ?></p>
+                                    <p><span class="font-semibold text-gray-400">Address:</span> <?php echo htmlspecialchars($member['address'] ?? 'N/A', ENT_QUOTES, 'UTF-8'); ?></p>
+                                    <p><span class="font-semibold text-gray-400">Joined:</span> <?php echo date('M j, Y', strtotime($member['created_at'])); ?></p>
+                                </div>
                             </div>
                         </div>
-                        <form method="POST" class="ml-2">
-                            <input type="hidden" name="member_id"
-                                value="<?php echo htmlspecialchars($member['id'], ENT_QUOTES, 'UTF-8'); ?>" />
-                            <button type="submit" name="remove_member"
-                                class="p-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-900/20 transition-colors"
-                                onclick="return confirm('Are you sure you want to remove this team member?');">
-                                <span class="material-icons-outlined text-sm">delete</span>
+                        <div class="flex flex-col gap-2 ml-2">
+                            <button type="button" onclick="editMember(<?php echo htmlspecialchars(json_encode($member), ENT_QUOTES, 'UTF-8'); ?>)"
+                                class="p-2 rounded-lg text-primary hover:text-white hover:bg-primary/20 transition-colors" title="Edit">
+                                <span class="material-icons-outlined text-sm">edit</span>
                             </button>
-                        </form>
+                            <form method="POST">
+                                <input type="hidden" name="member_id"
+                                    value="<?php echo htmlspecialchars($member['id'], ENT_QUOTES, 'UTF-8'); ?>" />
+                                <button type="submit" name="remove_member"
+                                    class="p-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-900/20 transition-colors"
+                                    onclick="return confirm('Are you sure you want to remove this team member?');" title="Remove">
+                                    <span class="material-icons-outlined text-sm">delete</span>
+                                </button>
+                            </form>
+                        </div>
                     </div>
                     <?php endforeach; ?>
                 </div>
@@ -327,6 +424,47 @@ if ($total_members >= 5):
         mobileBtn.addEventListener('click', () => {
             sidebar.classList.toggle('hidden');
         });
+    }
+
+    function editMember(member) {
+        document.querySelector('input[name="member_name"]').value = member.member_name;
+        document.querySelector('input[name="member_roll"]').value = member.roll_number || '';
+        document.querySelector('input[name="member_email"]').value = member.email || '';
+        document.querySelector('input[name="member_phone"]').value = member.phone_number || '';
+        document.querySelector('select[name="member_residence"]').value = member.residence || '';
+        document.querySelector('textarea[name="member_address"]').value = member.address || '';
+        document.getElementById('member_id').value = member.id;
+        
+        // Enable inputs for editing even if limit reached
+        const inputs = document.querySelectorAll('form input, form select, form textarea, form button[type="submit"]');
+        inputs.forEach(input => input.disabled = false);
+        
+        const btn = document.getElementById('submit_btn');
+        btn.name = 'update_member';
+        btn.innerHTML = '<span class="material-icons-outlined text-sm">save</span> Update Member';
+        
+        document.getElementById('form_title').innerHTML = '<span class="material-icons-outlined text-primary">edit</span> Edit Team Member';
+        document.getElementById('cancel_btn').classList.remove('hidden');
+        
+        document.querySelector('form').scrollIntoView({behavior: 'smooth'});
+    }
+
+    function cancelEdit() {
+        document.querySelector('form').reset();
+        document.getElementById('member_id').value = '';
+        
+        const isFull = <?php echo (count($team_members) >= 4) ? 'true' : 'false'; ?>;
+        if (isFull) {
+             const inputs = document.querySelectorAll('form input:not([type="hidden"]), form select, form textarea, form button[type="submit"]');
+             inputs.forEach(input => input.disabled = true);
+        }
+        
+        const btn = document.getElementById('submit_btn');
+        btn.name = 'add_member';
+        btn.innerHTML = '<span class="material-icons-outlined text-sm">add</span> Add Member';
+        
+        document.getElementById('form_title').innerHTML = '<span class="material-icons-outlined text-primary">person_add</span> Add Team Member';
+        document.getElementById('cancel_btn').classList.add('hidden');
     }
     </script>
 </body>

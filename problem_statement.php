@@ -187,6 +187,7 @@ $initials = strtoupper(substr($team['leader_name'], 0, 1) . substr(explode(' ', 
                 <span class="material-icons-outlined text-xl">dashboard</span>
                 <span>Dashboard</span>
             </a>
+            
             <a class="flex items-center space-x-3 px-4 py-3 rounded-xl text-muted-dark hover:bg-primary/10 transition-all"
                 href="team.php">
                 <span class="material-icons-outlined text-xl">group</span>
@@ -201,6 +202,16 @@ $initials = strtoupper(substr($team['leader_name'], 0, 1) . substr(explode(' ', 
                 href="submit.php">
                 <span class="material-icons-outlined text-xl">cloud_upload</span>
                 <span>Submission</span>
+            </a>
+            <a class="flex items-center space-x-3 px-4 py-3 rounded-xl text-muted-dark hover:bg-primary/10 transition-all"
+                href="profile.php">
+                <span class="material-icons-outlined text-xl">person</span>
+                <span>Profile</span>
+            </a>
+            <a class="flex items-center space-x-3 px-4 py-3 rounded-xl text-muted-dark hover:bg-primary/10 transition-all"
+                href="report.php">
+                <span class="material-icons-outlined text-xl">assessment</span>
+                <span>Report</span>
             </a>
             <a class="flex items-center space-x-3 px-4 py-3 rounded-xl text-muted-dark hover:bg-primary/10 transition-all"
                 href="logout.php">

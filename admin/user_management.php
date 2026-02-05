@@ -16,6 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $team_id = intval($_POST['team_id'] ?? 0);
     $email = trim($_POST['email'] ?? '');
     $password = trim($_POST['password'] ?? '');
+    $ps_id = isset($_POST['ps_id']) ? intval($_POST['ps_id']) : -1;
     
     if ($team_id > 0) {
         if (!empty($password)) {
@@ -39,11 +40,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $stmt->close();
             }
         }
+
+        // Update Problem Statement Selection
+        if ($ps_id >= 0) {
+            if ($ps_id === 0) {
+                // Remove selection
+                $del_sql = 'DELETE FROM team_ps_selection WHERE team_id = ?';
+                if ($stmt = $mysqli->prepare($del_sql)) {
+                    $stmt->bind_param('i', $team_id);
+                    $stmt->execute();
+                    $stmt->close();
+                }
+            } else {
+                // Update or Insert selection
+                // First check if exists to decide between UPDATE or INSERT (or use ON DUPLICATE KEY UPDATE if supported, but logic is safer here)
+                $check_sql = "SELECT id FROM team_ps_selection WHERE team_id = $team_id";
+                $check_res = $mysqli->query($check_sql);
+                
+                if ($check_res && $check_res->num_rows > 0) {
+                    $ps_sql = 'UPDATE team_ps_selection SET ps_id = ? WHERE team_id = ?';
+                } else {
+                    $ps_sql = 'INSERT INTO team_ps_selection (ps_id, team_id) VALUES (?, ?)';
+                }
+                
+                if ($stmt = $mysqli->prepare($ps_sql)) {
+                    $stmt->bind_param('ii', $ps_id, $team_id);
+                    $stmt->execute();
+                    $stmt->close();
+                }
+            }
+        }
     }
 }
 
 $teams = [];
-$sql = 'SELECT t.id, t.team_name, t.leader_name, t.email, t.roll_number, ps.stmt_name, ps.sno 
+$sql = 'SELECT t.id, t.team_name, t.leader_name, t.email, t.roll_number, ps.stmt_name, ps.sno, ps.id as selected_ps_id 
         FROM teams t 
         LEFT JOIN team_ps_selection tps ON t.id = tps.team_id 
         LEFT JOIN problem_statements ps ON tps.ps_id = ps.id 
@@ -51,6 +82,15 @@ $sql = 'SELECT t.id, t.team_name, t.leader_name, t.email, t.roll_number, ps.stmt
 if ($result = $mysqli->query($sql)) {
     while ($row = $result->fetch_assoc()) {
         $teams[] = $row;
+    }
+}
+
+// Fetch all active problem statements for the dropdown
+$all_ps = [];
+$ps_res = $mysqli->query("SELECT id, sno, stmt_name FROM problem_statements WHERE is_active = 1 ORDER BY sno ASC");
+if ($ps_res) {
+    while ($row = $ps_res->fetch_assoc()) {
+        $all_ps[] = $row;
     }
 }
 
@@ -186,7 +226,7 @@ unset($_SESSION['message'], $_SESSION['message_type']);
                                 </tr>
                                 <?php else: ?>
                                 <?php foreach ($teams as $idx => $team): ?>
-                                <tr class="hover:bg-surface-dark transition-colors group">
+                                <tr class="hover:bg-surface-dark transition-colors group cursor-pointer" onclick="window.location.href='team_details.php?id=<?php echo $team['id']; ?>'">
                                     <td class="px-6 py-4 text-sm text-text-muted text-center font-mono">
                                         <?php echo str_pad($team['id'], 2, '0', STR_PAD_LEFT); ?>
                                     </td>
@@ -216,8 +256,11 @@ unset($_SESSION['message'], $_SESSION['message_type']);
                                             <span class="text-gray-500 italic">Not Selected</span>
                                         <?php endif; ?>
                                     </td>
-                                    <td class="px-6 py-4 text-center">
-                                        <button onclick="openEditModal(<?php echo htmlspecialchars(json_encode($team)); ?>)" class="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-primary/20 hover:bg-primary/40 text-primary transition-all hover:scale-110" title="Edit User">
+                                    <td class="px-6 py-4 text-center" onclick="event.stopPropagation()">
+                                        <a href="team_details.php?id=<?php echo $team['id']; ?>" class="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-400 transition-all hover:scale-110 mr-2" title="View Details">
+                                            <span class="material-symbols-outlined text-lg">visibility</span>
+                                        </a>
+                                        <button onclick="openEditModal(<?php echo htmlspecialchars(json_encode($team)); ?>)" class="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-white hover:bg-gray-100/40 text-primary transition-all hover:scale-110" title="Edit User">
                                             <span class="material-symbols-outlined text-lg">edit</span>
                                         </button>
                                     </td>
@@ -265,6 +308,16 @@ unset($_SESSION['message'], $_SESSION['message_type']);
                     <input type="text" name="password" id="edit_password" class="w-full px-4 py-2 bg-surface-dark border border-border-dark/30 rounded-lg text-white placeholder-text-muted/50 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary" placeholder="New password (optional)" />
                 </div>
 
+                <div>
+                    <label class="block text-sm font-medium text-text-muted mb-2">Problem Statement</label>
+                    <select name="ps_id" id="edit_ps_id" class="w-full px-4 py-2 bg-surface-dark border border-border-dark/30 rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
+                        <option value="0">None (Not Selected)</option>
+                        <?php foreach ($all_ps as $ps): ?>
+                            <option value="<?php echo $ps['id']; ?>">PS-<?php echo $ps['sno']; ?>: <?php echo htmlspecialchars($ps['stmt_name']); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
                 <div class="flex gap-3 mt-4">
                     <button type="button" onclick="closeEditModal()" class="flex-1 px-4 py-2.5 border border-border-dark/30 hover:bg-surface-dark text-text-muted font-medium rounded-lg transition-colors">
                         Cancel
@@ -284,6 +337,7 @@ unset($_SESSION['message'], $_SESSION['message_type']);
         document.getElementById('edit_leader_name').value = team.leader_name;
         document.getElementById('edit_email').value = team.email;
         document.getElementById('edit_password').value = '';
+        document.getElementById('edit_ps_id').value = team.selected_ps_id || 0;
         document.getElementById('editModal').classList.remove('hidden');
     }
 

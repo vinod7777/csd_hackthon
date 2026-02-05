@@ -193,30 +193,41 @@ $initials = strtoupper(substr($team['leader_name'], 0, 1) . substr(explode(' ', 
                 <span>Dashboard</span>
             </a>
             <a class="flex items-center space-x-3 px-4 py-3 rounded-xl text-muted-dark hover:bg-primary/10 transition-all"
-                href="team.php">
-                <span class="material-icons-outlined text-xl">group</span>
-                <span>Team</span>
-            </a>
-            <a class="flex items-center space-x-3 px-4 py-3 rounded-xl text-muted-dark hover:bg-primary/10 transition-all"
-                href="problem_statement.php">
-                <span class="material-icons-outlined text-xl">assignment</span>
-                <span>Problem Statement</span>
+            href="team.php">
+            <span class="material-icons-outlined text-xl">group</span>
+            <span>Team</span>
+        </a>
+        <a class="flex items-center space-x-3 px-4 py-3 rounded-xl text-muted-dark hover:bg-primary/10 transition-all"
+        href="problem_statement.php">
+        <span class="material-icons-outlined text-xl">assignment</span>
+        <span>Problem Statement</span>
             </a>
             <a class="flex items-center space-x-3 px-4 py-3 rounded-xl bg-primary/20 text-white font-semibold"
-                href="submit.php">
-                <span class="material-icons-outlined text-xl">cloud_upload</span>
-                <span>Submission</span>
+            href="submit.php">
+            <span class="material-icons-outlined text-xl">cloud_upload</span>
+            <span>Submission</span>
+        </a>
+        <a class="flex items-center space-x-3 px-4 py-3 rounded-xl text-muted-dark hover:bg-primary/10 transition-all"
+                href="profile.php">
+                <span class="material-icons-outlined text-xl">person</span>
+                <span>Profile</span>
             </a>
             <a class="flex items-center space-x-3 px-4 py-3 rounded-xl text-muted-dark hover:bg-primary/10 transition-all"
-                href="logout.php">
-                <span class="material-icons-outlined text-xl">logout</span>
+                href="report.php">
+                <span class="material-icons-outlined text-xl">assessment</span>
+                <span>Report</span>
+            </a>
+        <a class="flex items-center space-x-3 px-4 py-3 rounded-xl text-muted-dark hover:bg-primary/10 transition-all"
+        href="logout.php">
+        <span class="material-icons-outlined text-xl">logout</span>
                 <span>Logout</span>
             </a>
+            
         </nav>
         <div class="p-4 border-t border-primary/30">
             <div class="bg-primary/10 p-3 rounded-xl flex items-center space-x-3">
                 <div
-                    class="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold shadow-lg shadow-primary/20">
+                class="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold shadow-lg shadow-primary/20">
                     <?php echo htmlspecialchars($initials, ENT_QUOTES, 'UTF-8'); ?>
                 </div>
                 <div>

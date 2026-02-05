@@ -40,9 +40,17 @@ if ($stmt = $mysqli->prepare($members_sql)) {
 }
 
 $registration_time = strtotime($team['created_at']);
-$end_time = $registration_time + (24 * 60 * 60); 
+$hackathon_start = strtotime('2026-02-07 10:00:00');
 $current_time = time();
-$time_remaining = max(0, $end_time - $current_time);
+
+if ($current_time < $hackathon_start) {
+    $time_remaining = $hackathon_start - $current_time;
+    $timer_label = "Starts In";
+} else {
+    $hackathon_end = $hackathon_start + (24 * 60 * 60);
+    $time_remaining = max(0, $hackathon_end - $current_time);
+    $timer_label = "Time Remaining";
+}
 
 $hours = floor($time_remaining / 3600);
 $minutes = floor(($time_remaining % 3600) / 60);
@@ -170,6 +178,7 @@ if ($res = $mysqli->query($sub_check_sql)) {
                 <span class="material-icons-outlined text-xl">dashboard</span>
                 <span>Dashboard</span>
             </a>
+            
             <a class="flex items-center space-x-3 px-4 py-3 rounded-xl text-muted-dark hover:bg-primary/10 transition-all"
                 href="team.php">
                 <span class="material-icons-outlined text-xl">group</span>
@@ -184,6 +193,16 @@ if ($res = $mysqli->query($sub_check_sql)) {
                 href="submit.php">
                 <span class="material-icons-outlined text-xl">cloud_upload</span>
                 <span>Submission</span>
+            </a>
+            <a class="flex items-center space-x-3 px-4 py-3 rounded-xl text-muted-dark hover:bg-primary/10 transition-all"
+                href="profile.php">
+                <span class="material-icons-outlined text-xl">person</span>
+                <span>Profile</span>
+            </a>
+            <a class="flex items-center space-x-3 px-4 py-3 rounded-xl text-muted-dark hover:bg-primary/10 transition-all"
+                href="report.php">
+                <span class="material-icons-outlined text-xl">assessment</span>
+                <span>Report</span>
             </a>
             <a class="flex items-center space-x-3 px-4 py-3 rounded-xl text-muted-dark hover:bg-primary/10 transition-all"
                 href="logout.php">
@@ -215,7 +234,7 @@ if ($res = $mysqli->query($sub_check_sql)) {
             <div class="mt-6 md:mt-0">
                 <div class="flex items-center space-x-4">
                     <div class="text-right">
-                        <p class="text-[10px] uppercase font-bold text-muted-dark tracking-widest">Time Remaining</p>
+                        <p class="text-[10px] uppercase font-bold text-muted-dark tracking-widest"><?php echo $timer_label; ?></p>
                         <p class="text-xl font-mono font-bold text-primary" id="countdown">
                             <?php echo htmlspecialchars($time_display, ENT_QUOTES, 'UTF-8'); ?></p>
                     </div>
@@ -223,6 +242,96 @@ if ($res = $mysqli->query($sub_check_sql)) {
             </div>
         </header>
         <div class="max-w-6xl mx-auto space-y-12">
+            <section>
+                <div class="flex items-center space-x-3 mb-8">
+                    <span class="material-symbols-outlined text-primary">route</span>
+                    <h2 class="text-xl font-bold text-white">Hackathon Journey</h2>
+                </div>
+                <div class="relative px-4">
+                    <div class="absolute top-1/2 left-8 right-8 h-1 bg-primary/20 -translate-y-1/2 z-0 hidden md:block">
+                    </div>
+                    <div class="absolute top-1/2 left-8 h-[<?php echo $progress_percentage; ?>%] h-1 bg-primary -translate-y-1/2 z-0 hidden md:block"
+                        style="width: <?php echo $progress_percentage; ?>%;"></div>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 relative z-10">
+                        <div class="flex md:flex-col items-center md:text-center space-x-4 md:space-x-0 group">
+                            <div
+                                class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 transition-transform group-hover:scale-110">
+                                <span class="material-symbols-outlined">check_circle</span>
+                            </div>
+                            <div class="md:mt-4">
+                                <h4 class="font-bold text-white">Registration</h4>
+                                <p class="text-xs text-primary font-medium">Completed</p>
+                            </div>
+                        </div>
+
+                        <div class="flex md:flex-col items-center md:text-center space-x-4 md:space-x-0 group">
+                            <div
+                                class="w-16 h-16 -mt-2 rounded-full border-4 <?php echo $selected_ps ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400 ring-emerald-500/10' : ($ps_released ? 'border-orange-500 bg-surface-dark text-orange-500 ring-orange-500/10' : 'border-gray-600 bg-surface-dark text-gray-500 ring-gray-600/10'); ?> flex items-center justify-center shadow-xl ring-8 transition-all group-hover:scale-110">
+                                <span
+                                    class="material-symbols-outlined text-3xl"><?php echo $selected_ps ? 'check_circle' : 'psychology'; ?></span>
+                            </div>
+                            <div class="md:mt-4">
+                                <h4
+                                    class="font-bold <?php echo $selected_ps ? 'text-emerald-400 text-lg' : ($ps_released ? 'text-orange-500 text-lg' : 'text-muted-dark'); ?>">
+                                    PS Selection</h4>
+                                <?php if ($selected_ps): ?>
+                                <p class="text-xs font-bold text-emerald-300 uppercase tracking-wider mt-1">✓ Selected
+                                </p>
+                                <p class="text-xs text-emerald-200/80 mt-1">
+                                    <?php echo htmlspecialchars($selected_ps['stmt_name'], ENT_QUOTES, 'UTF-8'); ?></p>
+                                <?php else: ?>
+                                <p
+                                    class="text-xs font-bold <?php echo $ps_released ? 'text-orange-400 uppercase tracking-wider' : 'text-muted-dark'; ?>">
+                                    <?php echo $ps_released ? 'Pending' : 'Upcoming'; ?></p>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                        <div
+                            class="flex md:flex-col items-center md:text-center space-x-4 md:space-x-0 group <?php echo ($selected_ps) ? '' : 'opacity-40'; ?>">
+                            <div
+                                class="w-12 h-12 rounded-full <?php echo $submissions_open ? 'bg-emerald-500 text-white' : ($selected_ps ? 'bg-orange-500 text-white' : 'bg-gray-700 text-gray-400'); ?> flex items-center justify-center transition-transform group-hover:scale-110">
+                                <span
+                                    class="material-symbols-outlined"><?php echo $submissions_open ? 'check_circle' : 'code'; ?></span>
+                            </div>
+                            <div class="md:mt-4">
+                                <h4
+                                    class="font-semibold <?php echo $submissions_open ? 'text-emerald-400' : ($selected_ps ? 'text-orange-500' : 'text-muted-dark'); ?>">
+                                    Development</h4>
+                                <?php if ($submissions_open): ?>
+                                <p class="text-xs text-emerald-300 font-bold uppercase tracking-wider">Completed</p>
+                                <?php elseif ($selected_ps): ?>
+                                <p class="text-xs text-orange-400 font-bold uppercase tracking-wider">Pending</p>
+                                <?php else: ?>
+                                <p class="text-xs text-muted-dark">Upcoming</p>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                        <div
+                            class="flex md:flex-col items-center md:text-center space-x-4 md:space-x-0 group <?php echo ($submissions_open) ? '' : 'opacity-40'; ?>">
+                            <div
+                                class="w-12 h-12 rounded-full <?php echo $has_submitted ? 'bg-emerald-500 text-white' : ($submissions_open ? 'bg-orange-500 text-white' : 'bg-gray-700 text-gray-400'); ?> flex items-center justify-center transition-transform group-hover:scale-110">
+                                <span
+                                    class="material-symbols-outlined"><?php echo $has_submitted ? 'check_circle' : 'rocket_launch'; ?></span>
+                            </div>
+                            <div class="md:mt-4">
+                                <h4
+                                    class="font-semibold <?php echo $has_submitted ? 'text-emerald-400' : ($submissions_open ? 'text-orange-500' : 'text-muted-dark'); ?>">
+                                    Submission</h4>
+                                <?php if ($has_submitted): ?>
+                                <p class="text-xs text-emerald-300 font-bold uppercase tracking-wider">Completed</p>
+                                <?php elseif ($submissions_open): ?>
+                                <p class="text-xs text-orange-400 font-bold uppercase tracking-wider">Pending</p>
+                                <?php else: ?>
+                                <p class="text-xs text-muted-dark">Upcoming</p>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <section>
                 <div class="flex items-center space-x-3 mb-6">
                     <span class="material-symbols-outlined text-primary">groups</span>
@@ -313,95 +422,6 @@ if ($res = $mysqli->query($sub_check_sql)) {
             </section>
             <?php endif; ?>
 
-            <section>
-                <div class="flex items-center space-x-3 mb-8">
-                    <span class="material-symbols-outlined text-primary">route</span>
-                    <h2 class="text-xl font-bold text-white">Hackathon Journey</h2>
-                </div>
-                <div class="relative px-4">
-                    <div class="absolute top-1/2 left-8 right-8 h-1 bg-primary/20 -translate-y-1/2 z-0 hidden md:block">
-                    </div>
-                    <div class="absolute top-1/2 left-8 h-[<?php echo $progress_percentage; ?>%] h-1 bg-primary -translate-y-1/2 z-0 hidden md:block"
-                        style="width: <?php echo $progress_percentage; ?>%;"></div>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 relative z-10">
-                        <div class="flex md:flex-col items-center md:text-center space-x-4 md:space-x-0 group">
-                            <div
-                                class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 transition-transform group-hover:scale-110">
-                                <span class="material-symbols-outlined">check_circle</span>
-                            </div>
-                            <div class="md:mt-4">
-                                <h4 class="font-bold text-white">Registration</h4>
-                                <p class="text-xs text-primary font-medium">Completed</p>
-                            </div>
-                        </div>
-
-                        <div class="flex md:flex-col items-center md:text-center space-x-4 md:space-x-0 group">
-                            <div
-                                class="w-16 h-16 -mt-2 rounded-full border-4 <?php echo $selected_ps ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400 ring-emerald-500/10' : ($ps_released ? 'border-orange-500 bg-surface-dark text-orange-500 ring-orange-500/10' : 'border-gray-600 bg-surface-dark text-gray-500 ring-gray-600/10'); ?> flex items-center justify-center shadow-xl ring-8 transition-all group-hover:scale-110">
-                                <span
-                                    class="material-symbols-outlined text-3xl"><?php echo $selected_ps ? 'check_circle' : 'psychology'; ?></span>
-                            </div>
-                            <div class="md:mt-4">
-                                <h4
-                                    class="font-bold <?php echo $selected_ps ? 'text-emerald-400 text-lg' : ($ps_released ? 'text-orange-500 text-lg' : 'text-muted-dark'); ?>">
-                                    PS Selection</h4>
-                                <?php if ($selected_ps): ?>
-                                <p class="text-xs font-bold text-emerald-300 uppercase tracking-wider mt-1">✓ Selected
-                                </p>
-                                <p class="text-xs text-emerald-200/80 mt-1">
-                                    <?php echo htmlspecialchars($selected_ps['stmt_name'], ENT_QUOTES, 'UTF-8'); ?></p>
-                                <?php else: ?>
-                                <p
-                                    class="text-xs font-bold <?php echo $ps_released ? 'text-orange-400 uppercase tracking-wider' : 'text-muted-dark'; ?>">
-                                    <?php echo $ps_released ? 'Pending' : 'Upcoming'; ?></p>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-
-                        <div
-                            class="flex md:flex-col items-center md:text-center space-x-4 md:space-x-0 group <?php echo ($selected_ps) ? '' : 'opacity-40'; ?>">
-                            <div
-                                class="w-12 h-12 rounded-full <?php echo $submissions_open ? 'bg-emerald-500 text-white' : ($selected_ps ? 'bg-orange-500 text-white' : 'bg-gray-700 text-gray-400'); ?> flex items-center justify-center transition-transform group-hover:scale-110">
-                                <span
-                                    class="material-symbols-outlined"><?php echo $submissions_open ? 'check_circle' : 'code'; ?></span>
-                            </div>
-                            <div class="md:mt-4">
-                                <h4
-                                    class="font-semibold <?php echo $submissions_open ? 'text-emerald-400' : ($selected_ps ? 'text-orange-500' : 'text-muted-dark'); ?>">
-                                    Development</h4>
-                                <?php if ($submissions_open): ?>
-                                <p class="text-xs text-emerald-300 font-bold uppercase tracking-wider">Completed</p>
-                                <?php elseif ($selected_ps): ?>
-                                <p class="text-xs text-orange-400 font-bold uppercase tracking-wider">Pending</p>
-                                <?php else: ?>
-                                <p class="text-xs text-muted-dark">Upcoming</p>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-
-                        <div
-                            class="flex md:flex-col items-center md:text-center space-x-4 md:space-x-0 group <?php echo ($submissions_open) ? '' : 'opacity-40'; ?>">
-                            <div
-                                class="w-12 h-12 rounded-full <?php echo $has_submitted ? 'bg-emerald-500 text-white' : ($submissions_open ? 'bg-orange-500 text-white' : 'bg-gray-700 text-gray-400'); ?> flex items-center justify-center transition-transform group-hover:scale-110">
-                                <span
-                                    class="material-symbols-outlined"><?php echo $has_submitted ? 'check_circle' : 'rocket_launch'; ?></span>
-                            </div>
-                            <div class="md:mt-4">
-                                <h4
-                                    class="font-semibold <?php echo $has_submitted ? 'text-emerald-400' : ($submissions_open ? 'text-orange-500' : 'text-muted-dark'); ?>">
-                                    Submission</h4>
-                                <?php if ($has_submitted): ?>
-                                <p class="text-xs text-emerald-300 font-bold uppercase tracking-wider">Completed</p>
-                                <?php elseif ($submissions_open): ?>
-                                <p class="text-xs text-orange-400 font-bold uppercase tracking-wider">Pending</p>
-                                <?php else: ?>
-                                <p class="text-xs text-muted-dark">Upcoming</p>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
         </div>
         <footer class="mt-24 border-t border-primary/30 pt-8 text-center text-xs text-muted-dark">
             <p>© 2026 Aditya Institute of Technology and Management. Organized by Dept of CSD &amp; IIC.</p>
