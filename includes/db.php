@@ -1,13 +1,11 @@
 <?php
 
-// Database connection settings
-// Adjust these values to match your local MySQL setup.
+
 $DB_HOST = 'localhost';
 $DB_USER = 'root';
 $DB_PASS = '';
 $DB_NAME = 'user';
 
-// Disable default exception handling to prevent fatal errors on table creation checks
 mysqli_report(MYSQLI_REPORT_OFF);
 
 $mysqli = new mysqli($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME);
@@ -16,13 +14,11 @@ if ($mysqli->connect_errno) {
     die('Failed to connect to MySQL: (' . $mysqli->connect_errno . ') ' . $mysqli->connect_error);
 }
 
-// Ensure proper character set
 if (! $mysqli->set_charset('utf8mb4')) {
-    // Not fatal, but useful to know
+    
     error_log('Error loading character set utf8mb4: ' . $mysqli->error);
 }
 
-// Disable foreign key checks temporarily for table creation
 $mysqli->query('SET FOREIGN_KEY_CHECKS=0');
 
 // ===== CREATE ALL TABLES =====

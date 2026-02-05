@@ -2,20 +2,16 @@
 session_start();
 require_once __DIR__ . '/../includes/db.php';
 
-// Require admin login
 if (!isset($_SESSION['admin_logged_in'])) {
     header('Location: manage_ps.php');
     exit;
 }
-
-// Handle logout
 if (isset($_GET['logout'])) {
     session_destroy();
     header('Location: manage_ps.php');
     exit;
 }
 
-// Handle update user
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_user') {
     $team_id = intval($_POST['team_id'] ?? 0);
     $email = trim($_POST['email'] ?? '');
@@ -23,10 +19,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     
     if ($team_id > 0) {
         if (!empty($password)) {
-            // Update both email and password
-            $update_sql = 'UPDATE teams SET email = ?, roll_number = ? WHERE id = ?';
+            $password_hash = password_hash($password, PASSWORD_DEFAULT);
+            $update_sql = 'UPDATE teams SET email = ?, password_hash = ? WHERE id = ?';
             if ($stmt = $mysqli->prepare($update_sql)) {
-                $stmt->bind_param('ssi', $email, $password, $team_id);
+                $stmt->bind_param('ssi', $email, $password_hash, $team_id);
                 if ($stmt->execute()) {
                     $_SESSION['message'] = 'User updated successfully!';
                     $_SESSION['message_type'] = 'success';
@@ -34,12 +30,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $stmt->close();
             }
         } else {
-            // Update only email
             $update_sql = 'UPDATE teams SET email = ? WHERE id = ?';
             if ($stmt = $mysqli->prepare($update_sql)) {
                 $stmt->bind_param('si', $email, $team_id);
                 if ($stmt->execute()) {
-                    $_SESSION['message'] = 'User updated successfully!';
                     $_SESSION['message_type'] = 'success';
                 }
                 $stmt->close();
@@ -48,9 +42,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// Fetch all teams
 $teams = [];
-$sql = 'SELECT id, team_name, leader_name, email, roll_number FROM teams ORDER BY id ASC';
+$sql = 'SELECT t.id, t.team_name, t.leader_name, t.email, t.roll_number, ps.stmt_name, ps.sno 
+        FROM teams t 
+        LEFT JOIN team_ps_selection tps ON t.id = tps.team_id 
+        LEFT JOIN problem_statements ps ON tps.ps_id = ps.id 
+        ORDER BY t.id ASC';
 if ($result = $mysqli->query($sql)) {
     while ($row = $result->fetch_assoc()) {
         $teams[] = $row;
@@ -116,11 +113,11 @@ unset($_SESSION['message'], $_SESSION['message_type']);
     </style>
 </head>
 <body class="bg-background-dark font-display text-white h-screen flex overflow-hidden">
-    <aside class="w-64 bg-background-dark flex flex-col border-r border-border-dark/30 hidden md:flex shrink-0">
+    <aside id="sidebar" class="w-64 bg-background-dark flex flex-col border-r border-border-dark/30 hidden md:flex shrink-0 fixed md:relative z-50 h-full">
         <div class="p-6 flex items-center gap-3">
             <div class="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg">A</div>
             <div>
-                <h1 class="text-white text-base font-bold leading-tight">HackAdmin</h1>
+                <h1 class="text-white text-base font-bold leading-tight">Admin</h1>
                 <p class="text-text-muted text-xs font-normal">Management Console</p>
             </div>
         </div>
@@ -153,29 +150,22 @@ unset($_SESSION['message'], $_SESSION['message_type']);
         </nav>
     </aside>
     
-    <!-- Main Content -->
-    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
-        <!-- Header -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative w-full min-w-0">
         <header
             class="h-16 border-b border-border-dark/30 bg-background-dark/50 backdrop-blur-md flex items-center justify-between px-6 shrink-0 z-10">
             <div class="flex items-center gap-4">
-                <button class="md:hidden text-white material-symbols-outlined">menu</button>
                 <h2 class="text-white text-xl font-bold tracking-tight">User Management</h2>
             </div>
-        </header>
         
-        <!-- Scrollable Content -->
+        </header>
         <div class="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-surface-dark scrollbar-track-transparent">
             <div class="max-w-[1400px] mx-auto flex flex-col gap-6">
-                <!-- Message Alert -->
                 <?php if (!empty($message)): ?>
                 <div class="<?php echo $message_type === 'success' ? 'bg-emerald-900/40 border-emerald-500 text-emerald-100' : 'bg-red-900/40 border-red-500 text-red-100'; ?> border rounded-lg px-4 py-3 text-sm">
                     <?php echo htmlspecialchars($message); ?>
                 </div>
                 <?php endif; ?>
 
-                <!-- Teams Table Card -->
-                <div class="bg-surface-dark/50 rounded-xl border border-border-dark/30 overflow-hidden shadow-xl shadow-black/20">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse" id="teamsTable">
                             <thead>
@@ -184,7 +174,8 @@ unset($_SESSION['message'], $_SESSION['message_type']);
                                     <th class="px-6 py-4 text-xs font-bold text-text-muted uppercase tracking-wider">Team Name</th>
                                     <th class="px-6 py-4 text-xs font-bold text-text-muted uppercase tracking-wider">Leader Name</th>
                                     <th class="px-6 py-4 text-xs font-bold text-text-muted uppercase tracking-wider">Email</th>
-                                    <th class="px-6 py-4 text-xs font-bold text-text-muted uppercase tracking-wider">Password</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-text-muted uppercase tracking-wider">Roll Number</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-text-muted uppercase tracking-wider">Problem Statement</th>
                                     <th class="px-6 py-4 text-xs font-bold text-text-muted uppercase tracking-wider text-center">Action</th>
                                 </tr>
                             </thead>
@@ -218,6 +209,13 @@ unset($_SESSION['message'], $_SESSION['message_type']);
                                     <td class="px-6 py-4 text-sm text-text-muted font-mono">
                                         <?php echo htmlspecialchars($team['roll_number']); ?>
                                     </td>
+                                    <td class="px-6 py-4 text-sm text-text-muted">
+                                        <?php if (!empty($team['stmt_name'])): ?>
+                                            <span class="text-emerald-400 font-medium">PS-<?php echo htmlspecialchars($team['sno']); ?>:</span> <?php echo htmlspecialchars($team['stmt_name']); ?>
+                                        <?php else: ?>
+                                            <span class="text-gray-500 italic">Not Selected</span>
+                                        <?php endif; ?>
+                                    </td>
                                     <td class="px-6 py-4 text-center">
                                         <button onclick="openEditModal(<?php echo htmlspecialchars(json_encode($team)); ?>)" class="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-primary/20 hover:bg-primary/40 text-primary transition-all hover:scale-110" title="Edit User">
                                             <span class="material-symbols-outlined text-lg">edit</span>
@@ -234,10 +232,8 @@ unset($_SESSION['message'], $_SESSION['message_type']);
         </div>
     </main>
 
-    <!-- Edit Modal -->
     <div id="editModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4" onclick="closeEditModal(event)">
         <div class="bg-surface-dark border border-primary/30 rounded-2xl shadow-2xl w-full max-w-md flex flex-col" onclick="event.stopPropagation()">
-            <!-- Modal Header -->
             <div class="bg-gradient-to-r from-primary to-secondary/50 p-6 border-b border-primary/30 flex items-center justify-between">
                 <h3 class="text-lg font-bold text-white">Edit User</h3>
                 <button onclick="closeEditModal()" class="p-2 hover:bg-primary/30 rounded-lg transition-colors">
@@ -259,8 +255,7 @@ unset($_SESSION['message'], $_SESSION['message_type']);
                     <label class="block text-sm font-medium text-text-muted mb-2">Leader Name</label>
                     <input type="text" id="edit_leader_name" class="w-full px-4 py-2 bg-surface-dark border border-border-dark/30 rounded-lg text-white" disabled />
                 </div>
-
-                <div>
+   <div>
                     <label class="block text-sm font-medium text-text-muted mb-2">Email</label>
                     <input type="email" name="email" id="edit_email" class="w-full px-4 py-2 bg-surface-dark border border-border-dark/30 rounded-lg text-white placeholder-text-muted/50 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary" required />
                 </div>
@@ -302,6 +297,21 @@ unset($_SESSION['message'], $_SESSION['message_type']);
             closeEditModal();
         }
     });
+    </script>
+<div class="md:hidden fixed bottom-6 right-6 z-50">
+<button id="mobile-menu-btn" class="h-14 w-14 rounded-full bg-primary text-white shadow-2xl flex items-center justify-center">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+<script>
+
+    const mobileBtn = document.getElementById('mobile-menu-btn');
+    const sidebar = document.getElementById('sidebar');
+    if (mobileBtn && sidebar) {
+        mobileBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('hidden');
+        });
+    }
     </script>
 </body>
 </html>

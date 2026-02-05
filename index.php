@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" class="dark scroll-smooth scroll-pt-24">
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -77,6 +77,17 @@
                 <a class="bg-primary hover:bg-red-800 text-white px-5 py-2 rounded-lg font-bold uppercase text-sm shadow-lg transform hover:-translate-y-0.5 transition-all" href="register.php">
                     Register
                 </a>
+                <button id="mobile-menu-btn" class="md:hidden text-gray-900 dark:text-white focus:outline-none ml-2">
+                    <span class="material-icons text-3xl">menu</span>
+                </button>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-white dark:bg-background-dark border-t border-gray-200 dark:border-gray-700 absolute w-full left-0 top-full shadow-lg">
+            <div class="flex flex-col px-4 py-4 space-y-4 font-medium text-sm uppercase tracking-wider text-center">
+                <a class="hover:text-primary transition-colors block py-2 text-gray-800 dark:text-gray-200" href="#about">About</a>
+                <a class="hover:text-primary transition-colors block py-2 text-gray-800 dark:text-gray-200" href="#prizes">Prizes</a>
+                <a class="hover:text-primary transition-colors block py-2 text-gray-800 dark:text-gray-200" href="#schedule">Schedule</a>
+                <a class="hover:text-primary transition-colors block py-2 text-gray-800 dark:text-gray-200" href="#coordinators">Contact</a>
             </div>
         </div>
     </nav>
@@ -93,8 +104,8 @@
             <h2 class="text-3xl md:text-5xl font-display font-bold text-gray-800 dark:text-white mb-8 uppercase tracking-wide">
                 Using Artificial Intelligence
             </h2>
-            <div class="max-w-4xl mx-auto bg-white dark:bg-surface-dark rounded-xl shadow-xl overflow-hidden mb-12 border border-gray-200 dark:border-gray-700">
-               
+            <div class="max-w-2xl mx-auto bg-white dark:bg-surface-dark rounded-xl shadow-xl overflow-hidden mb-12 border border-gray-200 dark:border-gray-700">
+                <img src="assets/image/poster.jpg" alt="Event Poster" class="w-full h-auto object-cover">
                 <div class="p-8">
                     <p class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white uppercase">
                         Any Web Application with Back End
@@ -102,7 +113,7 @@
                     <p class="mt-2 text-gray-500 dark:text-gray-400">Build innovative full-stack solutions powered by AI within 24 hours.</p>
                 </div>
             </div>
-            <div class="flex flex-wrap justify-center gap-6 mb-12">
+            <div class="flex flex-wrap justify-center gap-6 mb-12" id="schedule">
                 <div class="bg-white dark:bg-surface-dark p-6 rounded-lg shadow-md border border-gray-100 dark:border-gray-700 w-full sm:w-auto min-w-[200px]">
                     <span class="material-icons text-primary text-3xl mb-2">calendar_today</span>
                     <p class="text-xs font-bold text-gray-400 uppercase">Starts</p>
@@ -150,6 +161,46 @@
                     </div>
                     <p class="text-lg font-bold leading-tight">Laptop Lab, B-Block</p>
                     <p class="text-sm opacity-80">AITAM Campus</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="py-20 bg-white dark:bg-surface-dark" id="about">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center gap-12">
+                <div class="md:w-1/2">
+                    <div class="relative">
+                        <div class="absolute -top-4 -left-4 w-24 h-24 bg-primary/10 rounded-full blur-xl"></div>
+                        <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="CSD Department Team" class="rounded-xl shadow-2xl border-4 border-white dark:border-gray-700 relative z-10 w-full object-cover h-[400px]">
+                        <div class="absolute -bottom-6 -right-6 bg-white dark:bg-surface-dark-lighter p-4 rounded-lg shadow-lg border border-gray-100 dark:border-gray-600 z-20 hidden md:block">
+                            <p class="font-bold text-primary text-xl">Excellence</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">In Innovation</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="md:w-1/2">
+                    <span class="text-primary font-bold tracking-wider uppercase text-sm mb-2 block">Organized By</span>
+                    <h2 class="text-4xl md:text-5xl font-display font-bold text-gray-900 dark:text-white mb-6">
+                        Department of <span class="text-primary">CSD</span>
+                    </h2>
+                    <p class="text-lg text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
+                        The Department of Computer Science and Design (CSD) at AITAM is dedicated to fostering innovation at the intersection of technology and creativity. This 24-Hour Webathon is our flagship event designed to challenge students to push the boundaries of web development using Artificial Intelligence.
+                    </p>
+                    <p class="text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
+                        We aim to provide a platform for aspiring developers to showcase their skills, collaborate with peers, and build real-world solutions. Join us in this journey of coding, designing, and innovating for the future.
+                    </p>
+                    
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="border-l-4 border-primary pl-4">
+                            <h4 class="font-bold text-gray-900 dark:text-white text-lg">Innovation</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Fostering creative solutions</p>
+                        </div>
+                        <div class="border-l-4 border-primary pl-4">
+                            <h4 class="font-bold text-gray-900 dark:text-white text-lg">Technology</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Cutting-edge AI integration</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -252,9 +303,9 @@
                 <div class="bg-white p-4 rounded-xl shadow-2xl border-2 border-primary mb-4">
                     <img alt="Register QR Code" class="w-48 h-48" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDypZyl_902U30zW8lTc1PshQLJAmnswuBic3OaljuPQFbVgQ2erQLwe-6O0LrHMqOmDJHpO0l1vIuWtB2POlygR6x1aeoVQWAQ2Gbm_x0mDTguUuA5zNWaa3_SiIxA9uwSbF5JjQLFWUlP7PxqFAdhnHSlekqS8wihoS96yWWIC73tiQOy1xs-N4W2_fQxuPYnqnMPg-q-tV8W7YpxtMg8TD6jAgDAQWACNgbvP2y_485RuUdBThiJ1IN4w1pjcvetpvpv9ADziUm5"/>
                 </div>
-                <button class="bg-primary hover:bg-red-800 text-white font-bold py-3 px-10 rounded-lg shadow-lg uppercase tracking-wider transition-all transform hover:scale-105">
+                <a href="register.php" class="bg-primary hover:bg-red-800 text-white font-bold py-3 px-10 rounded-lg shadow-lg uppercase tracking-wider transition-all transform hover:scale-105">
                     Register Now
-                </button>
+                </a>
             </div>
         </div>
     </section>
@@ -285,29 +336,26 @@
                     <p class="text-sm text-gray-400">&</p>
                     <p class="text-md font-semibold text-gray-300 mt-1">Institution's Innovation Council</p>
                 </div>
-                <div class="text-center md:text-right">
-                    <h5 class="font-display text-xl font-bold mb-4 border-b border-gray-600 inline-block pb-1">Follow Us</h5>
-                    <div class="flex justify-center md:justify-end space-x-4 mb-4">
-                        <a class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-primary transition-colors" href="#">
-                            <img alt="Facebook" class="w-5 h-5 filter invert" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDL8MoXjS0fh-BEdaAKkcUWrfPTEkBANqNDjoS6vhvK7HsWXSqWPvpZ4cjGApapqv3Tpg5e3F41TLDpj9erMfki0BDqpnYd9c914Fw7RpcjN2geC2AOCaKfqfwJXr9pkhsOvWWmye9_lVSKE2TWBu46DiUs8Re3_YhlSitXM6GPqjyhFhkiahtflbKLwUo3DylaaQ1bB417kser0x2d_clZPrQnfFA7UQwIEBcRtmI_I4enMYMC3qfxQzMFmSUmQKvQg6wwS7DhV38b"/>
-                        </a>
-                        <a class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-primary transition-colors" href="#">
-                            <img alt="Instagram" class="w-5 h-5 filter invert" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEG6mx2RL0iOyAmrICCpbGc3z0FhLhPzNbI1jYHnCiR_yNy9fNXK1LLQTm5TqyYAcnouqDvZcnKwdW89yTa1QJj0kOFdHmP-AmDRKGvIHzI__wYhpn3LUDRaMxB6X8sBBdqUvuh7LCPITXsvYHb-4dQko_OjPjWbd18pO0whT7YMyAmbJzWi1cmnooID9TlXB2U336tJAgKk2joVx_T0RN8Q1wYBI44BZm3yt0BNqy0vEweOPe1tl8q0xa1p81ZI-3eBuoaeALQCgJ"/>
-                        </a>
-                        <a class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-primary transition-colors" href="#">
-                            <img alt="LinkedIn" class="w-5 h-5 filter invert" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgypMnN1Fm4ypf31KsocDIbWSJ7IV7U4VT6oU4SLqgAatozf03e3CW6HZa1eYk7HJ3YJ-2mW16_u_UrB_yzMJcl0oayr-nHPpcMMWetVkyIl0ZLU-xlMtPcW8HjXJOjJuYhCs1O1Sv9CSweYO2J7Wm-ohGxbNq24z7_4dRzv37EdlOYSHr7RdYfq0vy3QBbVWXRMkqQDZi32mi1AwRCyN-Z3IKRC9KmTaujLvzdC84PRsh9mkZNpZDDzgJslfUy-2akwycVhV-s5-G"/>
-                        </a>
-                        <a class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-primary transition-colors" href="#">
-                            <span class="material-icons text-white text-xl">language</span>
-                        </a>
-                    </div>
-                    <p class="text-xs text-gray-500">www.adityatekkali.edu.in</p>
-                </div>
+                
             </div>
-            <div class="border-t border-gray-700 pt-6 text-center text-xs text-gray-500">
-                © 2026 AITAM. All rights reserved. Designed for Webathon.
-            </div>
+            
         </div>
     </footer>
+    <script>
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        if (mobileMenuBtn && mobileMenu) {
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            mobileMenu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                });
+            });
+        }
+    </script>
 </body>
 </html>

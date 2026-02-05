@@ -2,20 +2,17 @@
 session_start();
 require_once __DIR__ . '/../includes/db.php';
 
-// Require admin login
 if (!isset($_SESSION['admin_logged_in'])) {
     header('Location: admin_login.php');
     exit;
 }
 
-// Handle logout
 if (isset($_GET['logout'])) {
     session_destroy();
     header('Location: admin_login.php');
     exit;
 }
 
-// Handle toggle submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'toggle_submissions') {
     $status = isset($_POST['submission_status']) ? intval($_POST['submission_status']) : 0;
     $check_sql = 'SELECT id FROM admin_settings WHERE setting_key = "allow_submissions"';
@@ -40,7 +37,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// Handle deletion
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_submission') {
     $id = intval($_POST['submission_id'] ?? 0);
     if ($id > 0) {
@@ -53,25 +49,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// Fetch submissions with pagination
 $limit = 10;
 $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $offset = ($page - 1) * $limit;
 
-// Count total submissions
 $count_sql = 'SELECT COUNT(*) as total FROM submissions';
 $count_res = $mysqli->query($count_sql);
 $total = $count_res ? $count_res->fetch_assoc()['total'] : 0;
 $total_pages = ceil($total / $limit);
 
-// Check if submissions are allowed
 $submissions_allowed = false;
 $allow_check = $mysqli->query('SELECT setting_value FROM admin_settings WHERE setting_key = "allow_submissions" LIMIT 1');
 if ($allow_check && $row = $allow_check->fetch_assoc()) {
     $submissions_allowed = intval($row['setting_value']) === 1;
 }
 
-// Fetch submissions
 $sql = 'SELECT s.id, s.team_id, s.submission_type, s.submission_link, s.submitted_at, t.team_name FROM submissions s LEFT JOIN teams t ON t.id = s.team_id ORDER BY s.submitted_at DESC LIMIT ? OFFSET ?';
 $stmt = $mysqli->prepare($sql);
 $submissions = [];
@@ -148,13 +140,13 @@ if ($stmt) {
 </head>
 
 <body class="bg-background-dark font-display text-white h-screen flex overflow-hidden">
-    <aside class="w-64 bg-background-dark flex flex-col border-r border-border-dark/30 hidden md:flex shrink-0">
+    <aside id="sidebar" class="w-64 bg-background-dark flex flex-col border-r border-border-dark/30 hidden md:flex shrink-0 fixed md:relative z-50 h-full">
         <div class="p-6 flex items-center gap-3">
             <div
                 class="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg">
                 A</div>
             <div>
-                <h1 class="text-white text-base font-bold leading-tight">HackAdmin</h1>
+                <h1 class="text-white text-base font-bold leading-tight">Admin</h1>
                 <p class="text-text-muted text-xs font-normal">Management Console</p>
             </div>
         </div>
@@ -186,21 +178,16 @@ if ($stmt) {
             </a>
         </nav>
     </aside>
-    <!-- Main Content -->
-    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
-        <!-- Header -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative w-full min-w-0">
         <header
             class="h-16 border-b border-border-dark/30 bg-background-dark/50 backdrop-blur-md flex items-center justify-between px-6 shrink-0 z-10">
             <div class="flex items-center gap-4">
-                <button class="md:hidden text-white material-symbols-outlined">menu</button>
                 <h2 class="text-white text-xl font-bold tracking-tight">Submission Management</h2>
             </div>
            
         </header>
-        <!-- Scrollable Content -->
         <div class="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-surface-dark scrollbar-track-transparent">
             <div class="max-w-[1400px] mx-auto flex flex-col gap-6">
-                <!-- Toggle Submissions Section -->
                 <div class="bg-gradient-to-r from-primary/20 to-secondary/20 border border-primary/30 rounded-xl p-6 flex items-center justify-between">
                     <div>
                         <h3 class="text-lg font-bold text-white mb-1">Submission Control</h3>
@@ -220,9 +207,7 @@ if ($stmt) {
                     </form>
                 </div>
                 
-                <!-- Filters Toolbar -->
                 <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-end justify-between bg-surface-dark/30 p-4 rounded-xl border border-border-dark/30">
-                    <!-- Search -->
                     <div class="w-full lg:w-96">
                         <label class="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wider">Find Team</label>
                         <div class="relative group">
@@ -233,7 +218,6 @@ if ($stmt) {
                         </div>
                     </div>
                 </div>
-                <!-- Data Table Card -->
                 <div class="bg-surface-dark/50 rounded-xl border border-border-dark/30 overflow-hidden shadow-xl shadow-black/20">
                                     <div class="overflow-x-auto">
                                         <table class="w-full text-left border-collapse" id="submissionsTable">
@@ -325,7 +309,6 @@ if ($stmt) {
                                             </tbody>
                                         </table>
                                     </div>
-                <!-- Pagination -->
                 <div class="px-6 py-4 border-t border-border-dark/30 bg-surface-dark flex flex-col sm:flex-row items-center justify-between gap-4">
                     <p class="text-sm text-text-muted">
                         Showing <span class="text-white font-medium"><?php echo $total > 0 ? $offset + 1 : 0; ?></span>
@@ -393,7 +376,7 @@ if ($stmt) {
 
                     rows.forEach((row, idx) => {
                         if (idx === 0) return; // Skip header
-                        if (row.style.display === 'none') return; // Skip hidden rows
+                        if (row.style.display === 'none') return; 
 
                         const cells = row.querySelectorAll('td');
                         const teamName = cells[1].textContent.split('\n')[0].trim();
@@ -413,6 +396,21 @@ if ($stmt) {
                     a.download = 'submissions.csv';
                     a.click();
                     window.URL.revokeObjectURL(url);
+                }
+
+                </script>
+<div class="md:hidden fixed bottom-6 right-6 z-50">
+<button id="mobile-menu-btn" class="h-14 w-14 rounded-full bg-primary text-white shadow-2xl flex items-center justify-center">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+<script>
+                const mobileBtn = document.getElementById('mobile-menu-btn');
+                const sidebar = document.getElementById('sidebar');
+                if (mobileBtn && sidebar) {
+                    mobileBtn.addEventListener('click', () => {
+                        sidebar.classList.toggle('hidden');
+                    });
                 }
                 </script>
 </body>

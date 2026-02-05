@@ -9,7 +9,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
 
-    // Simple admin authentication (hardcoded credentials)
     $admin_email = 'admin@aitam.com';
     $admin_password = 'admin123';
 
@@ -96,13 +95,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <main class="flex-grow flex items-center justify-center p-4 sm:p-8">
         <div class="max-w-md w-full bg-surface-dark rounded-2xl shadow-2xl overflow-hidden transition-colors duration-300 border border-border-dark">
-            <!-- Header with gradient background -->
             <div class="bg-gradient-admin p-8 text-white">
                 <h2 class="font-display text-3xl font-bold text-center uppercase tracking-wide">Admin Login</h2>
                 <p class="text-purple-200 text-center text-sm mt-2">Webathon Management System</p>
             </div>
 
-            <!-- Login Form -->
             <div class="p-8">
                 <?php if (!empty($errors)): ?>
                     <div class="mb-4 rounded-md bg-red-900/40 border border-red-500/50 text-red-100 px-4 py-3 text-sm">
@@ -174,7 +171,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </p>
                 </div>
                 <div class="flex space-x-6">
-                    <!-- Social icons removed -->
                 </div>
             </div>
         </div>
