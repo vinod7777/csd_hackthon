@@ -93,7 +93,7 @@
     </nav>
     
     <header class="relative overflow-hidden  bg-background-light dark:bg-background-dark">
-        <img class="mx-auto h-24 w-24" src="assets/image/25.png" alt="">
+        <img class="mx-auto h-32" src="assets/image/25.png" alt="">
         <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-size: 40px 40px; background-image: linear-gradient(to right, #9ca3af 1px, transparent 1px), linear-gradient(to bottom, #9ca3af 1px, transparent 1px);"></div>
         <div class="container mx-auto px-4 relative z-10 text-center">
             
@@ -174,7 +174,7 @@
                 <div class="md:w-1/2">
                     <div class="relative">
                         <div class="absolute -top-4 -left-4 w-24 h-24 bg-primary/10 rounded-full blur-xl"></div>
-                        <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="CSD Department Team" class="rounded-xl shadow-2xl border-4 border-white dark:border-gray-700 relative z-10 w-full object-cover h-[400px]">
+                        <img src="assets/image/AMC_2789.JPG" alt="CSD Department Team" class="rounded-xl shadow-2xl border-4 border-white dark:border-gray-700 relative z-10 w-full object-cover h-[400px]">
                         <div class="absolute -bottom-6 -right-6 bg-white dark:bg-surface-dark-lighter p-4 rounded-lg shadow-lg border border-gray-100 dark:border-gray-600 z-20 hidden md:block">
                             <p class="font-bold text-primary text-xl">Excellence</p>
                             <p class="text-xs text-gray-500 dark:text-gray-400">In Innovation</p>
@@ -303,7 +303,7 @@
             </div>
             <div class="md:w-auto flex flex-col items-center">
                 <div class="bg-white p-4 rounded-xl shadow-2xl border-2 border-primary mb-4">
-                    <img alt="Register QR Code" class="w-48 h-48" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDypZyl_902U30zW8lTc1PshQLJAmnswuBic3OaljuPQFbVgQ2erQLwe-6O0LrHMqOmDJHpO0l1vIuWtB2POlygR6x1aeoVQWAQ2Gbm_x0mDTguUuA5zNWaa3_SiIxA9uwSbF5JjQLFWUlP7PxqFAdhnHSlekqS8wihoS96yWWIC73tiQOy1xs-N4W2_fQxuPYnqnMPg-q-tV8W7YpxtMg8TD6jAgDAQWACNgbvP2y_485RuUdBThiJ1IN4w1pjcvetpvpv9ADziUm5"/>
+                    <img alt="Register QR Code" class="w-48 h-48" src="assets/image/qrcode.png"/>
                 </div>
                 <a href="register.php" class="bg-primary hover:bg-red-800 text-white font-bold py-3 px-10 rounded-lg shadow-lg uppercase tracking-wider transition-all transform hover:scale-105">
                     Register Now
@@ -332,11 +332,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="text-center">
-                    <h5 class="font-display text-xl font-bold mb-4">Organized By</h5>
-                    <p class="text-lg font-bold mb-1 text-red-400 mb-1">Department of CSD</p>
-                    <p class="text-md font-semibold mt-2 text-gray-300 mt-1">Web Site <br> Designed by <a class="text-blue-400 hover:text-blue-300" href="https://www.linkedin.com/in/saisateeshwarareddy/">T. Saisateeshwara Reddy </a>| Technical Trainer, IIC <br> Developed by <a class="text-blue-400 hover:text-blue-300" href="https://github.com/vinod7777">S Vinod kumar</a> | Dept. of CSE</p>
-                </div>
+                <?php include __DIR__ . '/includes/footer_design.php'; ?>
                 
             </div>
             

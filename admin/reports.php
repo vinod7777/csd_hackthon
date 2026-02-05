@@ -24,15 +24,6 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
         'Leader Residence', 'Leader Address', 'Registration Date', 
         'PS ID', 'PS Title', 'Submission Type', 'Submission Link', 'Submission Date'
     ];
-    // Add member headers
-    for ($i = 1; $i <= 4; $i++) {
-        $headers[] = "Member $i Name";
-        $headers[] = "Member $i Roll";
-        $headers[] = "Member $i Email";
-        $headers[] = "Member $i Phone";
-        $headers[] = "Member $i Residence";
-        $headers[] = "Member $i Address";
-    }
     fputcsv($output, $headers);
 
     // Fetch data for export
@@ -53,15 +44,6 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
         }
     }
 
-    $members_sql = "SELECT * FROM team_members ORDER BY team_id, id";
-    if ($result = $mysqli->query($members_sql)) {
-        while ($row = $result->fetch_assoc()) {
-            if (isset($teams_export[$row['team_id']])) {
-                $teams_export[$row['team_id']]['members'][] = $row;
-            }
-        }
-    }
-
     foreach ($teams_export as $team) {
         $line = [
             $team['id'], $team['team_name'], $team['leader_name'], $team['roll_number'], $team['email'], $team['phone_number'], $team['residence'], $team['address'], $team['created_at'],
@@ -69,15 +51,6 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
             $team['submission_type'] ?? 'N/A', $team['submission_link'] ?? 'N/A', $team['submitted_at'] ?? 'N/A'
         ];
 
-        $members = $team['members'];
-        for ($i = 0; $i < 4; $i++) {
-            if (isset($members[$i])) {
-                $m = $members[$i];
-                array_push($line, $m['member_name'], $m['roll_number'], $m['email'], $m['phone_number'], $m['residence'], $m['address']);
-            } else {
-                array_push($line, '', '', '', '', '', '');
-            }
-        }
         fputcsv($output, $line);
     }
     fclose($output);
@@ -111,6 +84,15 @@ if ($result = $mysqli->query($members_sql)) {
         }
     }
 }
+
+// Fetch settings for sidebar
+$sidebar_settings = [];
+$res = $mysqli->query("SELECT setting_key, setting_value FROM admin_settings WHERE setting_key IN ('allow_submissions', 'release_ps')");
+while ($row = $res->fetch_assoc()) {
+    $sidebar_settings[$row['setting_key']] = ($row['setting_value'] == '1' || $row['setting_value'] == 'true');
+}
+$submissions_open = $sidebar_settings['allow_submissions'] ?? false;
+$ps_released_sidebar = $sidebar_settings['release_ps'] ?? false;
 ?>
 <!DOCTYPE html>
 <html class="dark" lang="en">
@@ -181,11 +163,17 @@ if ($result = $mysqli->query($members_sql)) {
             </a>
             <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:bg-white/5 hover:text-white transition-colors group" href="manage_ps.php">
                 <span class="material-symbols-outlined text-text-muted group-hover:text-white">upload_file</span>
-                <span class="text-sm font-medium">PS Upload</span>
+                <div class="flex flex-col">
+                    <span class="text-sm font-medium">PS Upload</span>
+                    <span class="text-[10px] uppercase tracking-wider <?php echo $ps_released_sidebar ? 'text-emerald-400' : 'text-orange-400'; ?>"><?php echo $ps_released_sidebar ? 'Released' : 'Not Released'; ?></span>
+                </div>
             </a>
             <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:bg-white/5 hover:text-white transition-colors group" href="submissions.php">
                 <span class="material-symbols-outlined text-text-muted group-hover:text-white">assignment_turned_in</span>
-                <span class="text-sm font-medium">Submissions</span>
+                <div class="flex flex-col">
+                    <span class="text-sm font-medium">Submissions</span>
+                    <span class="text-[10px] uppercase tracking-wider <?php echo $submissions_open ? 'text-emerald-400' : 'text-red-400'; ?>"><?php echo $submissions_open ? 'Open' : 'Closed'; ?></span>
+                </div>
             </a>
             <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:bg-white/5 hover:text-white transition-colors group" href="user_management.php">
                 <span class="material-symbols-outlined text-text-muted group-hover:text-white">people</span>
@@ -457,6 +445,11 @@ if ($result = $mysqli->query($members_sql)) {
         document.body.classList.remove('modal-open');
         document.getElementById('reportModal').classList.add('hidden');
     }
+
+    // Auto refresh
+    setTimeout(function() {
+        location.reload();
+    }, 30000);
     </script>
 </body>
 </html>

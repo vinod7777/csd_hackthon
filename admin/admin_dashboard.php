@@ -175,13 +175,19 @@ if ($result = $mysqli->query($sql)) {
             <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:bg-white/5 hover:text-white transition-colors group"
                 href="manage_ps.php">
                 <span class="material-symbols-outlined text-text-muted group-hover:text-white">upload_file</span>
-                <span class="text-sm font-medium">PS Upload</span>
+                <div class="flex flex-col">
+                    <span class="text-sm font-medium">PS Upload</span>
+                    <span class="text-[10px] uppercase tracking-wider <?php echo $totals['ps_released'] ? 'text-emerald-400' : 'text-orange-400'; ?>"><?php echo $totals['ps_released'] ? 'Released' : 'Not Released'; ?></span>
+                </div>
             </a>
             <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:bg-white/5 hover:text-white transition-colors group"
                 href="submissions.php">
                 <span
                     class="material-symbols-outlined text-text-muted group-hover:text-white">assignment_turned_in</span>
-                <span class="text-sm font-medium">Submissions</span>
+                <div class="flex flex-col">
+                    <span class="text-sm font-medium">Submissions</span>
+                    <span class="text-[10px] uppercase tracking-wider <?php echo $totals['submissions_open'] ? 'text-emerald-400' : 'text-red-400'; ?>"><?php echo $totals['submissions_open'] ? 'Open' : 'Closed'; ?></span>
+                </div>
             </a>
             <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:bg-white/5 hover:text-white transition-colors group"
                 href="user_management.php">
@@ -457,6 +463,11 @@ if ($r['event_type'] === 'submission') {
             sidebar.classList.toggle('hidden');
         });
     }
+
+    // Auto refresh
+    setTimeout(function() {
+        location.reload();
+    }, 30000);
     </script>
 </body>
 

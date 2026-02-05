@@ -13,31 +13,36 @@ $message_type = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($_POST['action'] === 'toggle_release') {
         $status = isset($_POST['release_status']) ? intval($_POST['release_status']) : 0;
-        $check_sql = "SELECT id FROM admin_settings WHERE setting_key = 'release_ps'";
-        $result = $mysqli->query($check_sql);
-        
-        if ($result && $result->num_rows > 0) {
-            $update_sql = 'UPDATE admin_settings SET setting_value = ? WHERE setting_key = "release_ps"';
-        } else {
-            $update_sql = 'INSERT INTO admin_settings (setting_key, setting_value) VALUES ("release_ps", ?)';
-        }
+        $update_sql = 'INSERT INTO admin_settings (setting_key, setting_value) VALUES ("release_ps", ?) ON DUPLICATE KEY UPDATE setting_value = ?';
         
         if ($stmt = $mysqli->prepare($update_sql)) {
             $status_str = $status ? '1' : '0';
-            $stmt->bind_param('s', $status_str);
+            $stmt->bind_param('ss', $status_str, $status_str);
             if ($stmt->execute()) {
                 $message = $status ? 'Problem Statements are now RELEASED!' : 'Problem Statements are now HIDDEN!';
                 $message_type = 'success';
                 
                 if (isset($_POST['ajax'])) {
+                    header('Content-Type: application/json');
                     echo json_encode(['status' => 'success', 'message' => $message]);
                     exit;
                 }
             } else {
                 $message = 'Failed to update release status.';
                 $message_type = 'error';
+                if (isset($_POST['ajax'])) {
+                    header('Content-Type: application/json');
+                    echo json_encode(['status' => 'error', 'message' => $message]);
+                    exit;
+                }
             }
             $stmt->close();
+        } else {
+            if (isset($_POST['ajax'])) {
+                header('Content-Type: application/json');
+                echo json_encode(['status' => 'error', 'message' => 'Database error: ' . $mysqli->error]);
+                exit;
+            }
         }
     }
     
@@ -116,6 +121,15 @@ $result = $mysqli->query($check_sql);
 if ($result && $row = $result->fetch_assoc()) {
     $ps_enabled = ($row['setting_value'] === '1' || $row['setting_value'] === 'true');
 }
+
+// Fetch settings for sidebar
+$sidebar_settings = [];
+$res = $mysqli->query("SELECT setting_key, setting_value FROM admin_settings WHERE setting_key IN ('allow_submissions', 'release_ps')");
+while ($row = $res->fetch_assoc()) {
+    $sidebar_settings[$row['setting_key']] = ($row['setting_value'] == '1' || $row['setting_value'] == 'true');
+}
+$submissions_open = $sidebar_settings['allow_submissions'] ?? false;
+$ps_released_sidebar = $sidebar_settings['release_ps'] ?? false;
 
 $problem_statements = [];
 $fetch_ps = 'SELECT ps.id, ps.sno, ps.stmt_name, ps.description, ps.slot, ps.is_active, (SELECT COUNT(*) FROM team_ps_selection WHERE ps_id = ps.id) as selected_count FROM problem_statements ps ORDER BY ps.sno ASC';
@@ -199,7 +213,7 @@ if ($result) {
         to { transform: rotateY(360deg); }
     }
     .animate-spin-3d {
-        animation: spin-3d 0.6s linear infinite;
+        animation: spin-3d 2s linear infinite;
     }
     </style>
 </head>
@@ -225,13 +239,19 @@ if ($result) {
             <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/20 text-white border border-primary/20 shadow-[0_0_15px_rgba(68,60,104,0.3)]"
                 href="manage_ps.php">
                 <span class="material-symbols-outlined fill-current text-primary">upload_file</span>
-                <span class="text-sm font-medium">PS Upload</span>
+                <div class="flex flex-col">
+                    <span class="text-sm font-medium">PS Upload</span>
+                    <span class="text-[10px] uppercase tracking-wider <?php echo $ps_released_sidebar ? 'text-emerald-400' : 'text-orange-400'; ?>"><?php echo $ps_released_sidebar ? 'Released' : 'Not Released'; ?></span>
+                </div>
             </a>
             <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:bg-white/5 hover:text-white transition-colors group"
                 href="submissions.php">
                 <span
                     class="material-symbols-outlined text-text-muted group-hover:text-white">assignment_turned_in</span>
-                <span class="text-sm font-medium">Submissions</span>
+                <div class="flex flex-col">
+                    <span class="text-sm font-medium">Submissions</span>
+                    <span class="text-[10px] uppercase tracking-wider <?php echo $submissions_open ? 'text-emerald-400' : 'text-red-400'; ?>"><?php echo $submissions_open ? 'Open' : 'Closed'; ?></span>
+                </div>
             </a>
             <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:bg-white/5 hover:text-white transition-colors group"
                 href="user_management.php">
@@ -461,8 +481,8 @@ if ($result) {
     function startReleaseSequence() {
         const overlay = document.getElementById('releaseOverlay');
         const timer = document.getElementById('releaseTimer');
-        const success = document.getElementById('releaseSuccess');
         const timerCount = document.getElementById('timerCount');
+        const startedText = document.getElementById('startedText');
         const logo = timer.querySelector('img');
         
         overlay.classList.remove('hidden');
@@ -473,8 +493,13 @@ if ($result) {
             timerCount.classList.remove('hidden');
             timerCount.textContent = '5';
         }
-        if(logo) logo.classList.add('animate-spin-3d');
-        success.classList.add('hidden');
+        if(logo) {
+            logo.style.transform = 'scale(1)';
+            logo.style.transition = '';
+            logo.classList.add('animate-spin-3d');
+            logo.style.animationDuration = '0.2s';
+        }
+        if(startedText) startedText.classList.add('hidden');
         
         // Confetti from two sides
         const duration = 5000;
@@ -486,14 +511,14 @@ if ($result) {
                 angle: 60,
                 spread: 55,
                 origin: { x: 0 },
-                colors: ['#443c68', '#635985', '#ffffff']
+                colors: ['#ef4444', '#22c55e', '#3b82f6', '#eab308', '#a855f7', '#ec4899']
             });
             confetti({
                 particleCount: 7,
                 angle: 120,
                 spread: 55,
                 origin: { x: 1 },
-                colors: ['#443c68', '#635985', '#ffffff']
+                colors: ['#ef4444', '#22c55e', '#3b82f6', '#eab308', '#a855f7', '#ec4899']
             });
 
             if (Date.now() < end) {
@@ -508,12 +533,28 @@ if ($result) {
             count--;
             if (count > 0) {
                 if(timerCount) timerCount.textContent = count;
+                if(logo) {
+                    // Slow down animation as countdown progresses
+                    if(count === 4) logo.style.animationDuration = '0.5s';
+                    if(count === 3) logo.style.animationDuration = '1.0s';
+                    if(count === 2) logo.style.animationDuration = '1.8s';
+                    if(count === 1) logo.style.animationDuration = '3.0s';
+                }
             } else {
                 clearInterval(interval);
                 
                 // Timer ended: Hide count, stop spin
                 if(timerCount) timerCount.classList.add('hidden');
-                if(logo) logo.classList.remove('animate-spin-3d');
+                if(logo) {
+                    logo.classList.remove('animate-spin-3d');
+                    logo.style.animationDuration = '';
+                    // Enlarge logo smoothly
+                    void logo.offsetWidth; // Force reflow to ensure transition plays
+                    logo.style.transition = 'transform 2s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                    logo.style.transform = 'scale(1.8)';
+                }
+                
+                if(startedText) startedText.classList.remove('hidden');
                 
                 // Trigger AJAX
                 const formData = new FormData();
@@ -527,20 +568,26 @@ if ($result) {
                 })
                 .then(response => response.json())
                 .then(data => {
-                    // Show logo for 2 seconds then show success
-                    setTimeout(() => {
-                        timer.classList.add('hidden');
-                        success.classList.remove('hidden');
-                    }, 2000);
+                    if (data.status === 'success') {
+                        // Show logo for 3 seconds then reload
+                        setTimeout(() => {
+                            location.reload();
+                        }, 3000);
+                    } else {
+                        alert('Error: ' + (data.message || 'Unknown error'));
+                        location.reload();
+                    }
                 })
                 .catch(err => {
                     console.error(err);
-                    timer.classList.add('hidden');
-                    success.classList.remove('hidden');
+                    alert('Request failed. Please check console.');
+                    location.reload();
                 });
             }
         }, 1000);
     }
+
+  
     </script>
 
     <!-- Release Animation Overlay -->
@@ -551,18 +598,9 @@ if ($result) {
             <div id="timerCount" class="text-[100px] md:text-[150px] font-black text-white font-display tracking-tighter animate-pulse">
                 5
             </div>
-        </div>
-
-        <!-- Success Modal -->
-        <div id="releaseSuccess" class="hidden bg-surface-dark border border-emerald-500/50 p-8 rounded-2xl shadow-2xl text-center max-w-md mx-4 transform scale-100 transition-all">
-            <div class="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6 ring-4 ring-emerald-500/10">
-                <span class="material-symbols-outlined text-5xl text-emerald-400">rocket_launch</span>
+            <div id="startedText" class="hidden text-4xl md:text-6xl font-bold text-white mt-12 animate-bounce text-center tracking-tight drop-shadow-[0_0_25px_rgba(255,255,255,0.5)]">
+                Hackathon Started!
             </div>
-            <h3 class="text-3xl font-bold text-white mb-2">Hackathon Started!</h3>
-            <p class="text-gray-300 mb-8">Problem statements are now live for all participants. Good luck!</p>
-            <button onclick="window.location.reload()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-colors shadow-lg shadow-emerald-600/20">
-                Continue to Dashboard
-            </button>
         </div>
     </div>
 </body>

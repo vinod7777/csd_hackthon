@@ -344,6 +344,9 @@ $initials = strtoupper(substr($team['leader_name'], 0, 1) . substr(explode(' ', 
                 </ul>
             </div>
         </div>
+        <footer class="mt-12 border-t border-primary/30 pt-8">
+            <?php include __DIR__ . '/includes/footer_design.php'; ?>
+        </footer>
     </main>
     <div class="md:hidden fixed bottom-6 right-6 z-50">
         <button id="mobile-menu-btn"
@@ -408,6 +411,11 @@ $initials = strtoupper(substr($team['leader_name'], 0, 1) . substr(explode(' ', 
             });
         }
     });
+
+    // Auto refresh
+    setTimeout(function() {
+        location.reload();
+    }, 30000);
     </script>
 </body>
 

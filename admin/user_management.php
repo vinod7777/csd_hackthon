@@ -97,6 +97,15 @@ if ($ps_res) {
 $message = $_SESSION['message'] ?? '';
 $message_type = $_SESSION['message_type'] ?? '';
 unset($_SESSION['message'], $_SESSION['message_type']);
+
+// Fetch settings for sidebar
+$sidebar_settings = [];
+$res = $mysqli->query("SELECT setting_key, setting_value FROM admin_settings WHERE setting_key IN ('allow_submissions', 'release_ps')");
+while ($row = $res->fetch_assoc()) {
+    $sidebar_settings[$row['setting_key']] = ($row['setting_value'] == '1' || $row['setting_value'] == 'true');
+}
+$submissions_open = $sidebar_settings['allow_submissions'] ?? false;
+$ps_released_sidebar = $sidebar_settings['release_ps'] ?? false;
 ?>
 <!DOCTYPE html>
 <html class="dark" lang="en">
@@ -180,12 +189,18 @@ unset($_SESSION['message'], $_SESSION['message_type']);
             <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:bg-white/5 hover:text-white transition-colors group"
                 href="manage_ps.php">
                 <span class="material-symbols-outlined text-text-muted group-hover:text-white">upload_file</span>
-                <span class="text-sm font-medium">PS Upload</span>
+                <div class="flex flex-col">
+                    <span class="text-sm font-medium">PS Upload</span>
+                    <span class="text-[10px] uppercase tracking-wider <?php echo $ps_released_sidebar ? 'text-emerald-400' : 'text-orange-400'; ?>"><?php echo $ps_released_sidebar ? 'Released' : 'Not Released'; ?></span>
+                </div>
             </a>
             <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:bg-white/5 hover:text-white transition-colors group"
                 href="submissions.php">
                 <span class="material-symbols-outlined text-text-muted group-hover:text-white">assignment_turned_in</span>
-                <span class="text-sm font-medium">Submissions</span>
+                <div class="flex flex-col">
+                    <span class="text-sm font-medium">Submissions</span>
+                    <span class="text-[10px] uppercase tracking-wider <?php echo $submissions_open ? 'text-emerald-400' : 'text-red-400'; ?>"><?php echo $submissions_open ? 'Open' : 'Closed'; ?></span>
+                </div>
             </a>
             <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/20 text-white border border-primary/20 shadow-[0_0_15px_rgba(68,60,104,0.3)]"
                 href="user_management.php">
@@ -411,6 +426,11 @@ unset($_SESSION['message'], $_SESSION['message_type']);
             sidebar.classList.toggle('hidden');
         });
     }
+
+    // Auto refresh
+    setTimeout(function() {
+        location.reload();
+    }, 30000);
     </script>
 </body>
 </html>

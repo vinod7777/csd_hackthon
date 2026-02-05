@@ -234,6 +234,14 @@ $team_id_display = 'AI-WEB-' . str_pad($team['id'], 3, '0', STR_PAD_LEFT);
                 <?php endif; ?>
             </div>
         </div>
+        <footer class="mt-12 border-t border-primary/30 pt-8 no-print">
+            <?php include __DIR__ . '/includes/footer_design.php'; ?>
+        </footer>
     </main>
+    <script>
+        setTimeout(function() {
+            location.reload();
+        }, 30000);
+    </script>
 </body>
 </html>

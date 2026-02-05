@@ -290,18 +290,18 @@ if ($res = $mysqli->query($sub_check_sql)) {
                         <div
                             class="flex md:flex-col items-center md:text-center space-x-4 md:space-x-0 group <?php echo ($selected_ps) ? '' : 'opacity-40'; ?>">
                             <div
-                                class="w-12 h-12 rounded-full <?php echo $submissions_open ? 'bg-emerald-500 text-white' : ($selected_ps ? 'bg-orange-500 text-white' : 'bg-gray-700 text-gray-400'); ?> flex items-center justify-center transition-transform group-hover:scale-110">
+                                class="w-12 h-12 rounded-full <?php echo ($has_submitted || $submissions_open) ? 'bg-emerald-500 text-white' : ($selected_ps ? 'bg-orange-500 text-white' : 'bg-gray-700 text-gray-400'); ?> flex items-center justify-center transition-transform group-hover:scale-110">
                                 <span
-                                    class="material-symbols-outlined"><?php echo $submissions_open ? 'check_circle' : 'code'; ?></span>
+                                    class="material-symbols-outlined"><?php echo ($has_submitted || $submissions_open) ? 'check_circle' : 'code'; ?></span>
                             </div>
                             <div class="md:mt-4">
                                 <h4
-                                    class="font-semibold <?php echo $submissions_open ? 'text-emerald-400' : ($selected_ps ? 'text-orange-500' : 'text-muted-dark'); ?>">
+                                    class="font-semibold <?php echo ($has_submitted || $submissions_open) ? 'text-emerald-400' : ($selected_ps ? 'text-orange-500' : 'text-muted-dark'); ?>">
                                     Development</h4>
-                                <?php if ($submissions_open): ?>
+                                <?php if ($has_submitted || $submissions_open): ?>
                                 <p class="text-xs text-emerald-300 font-bold uppercase tracking-wider">Completed</p>
                                 <?php elseif ($selected_ps): ?>
-                                <p class="text-xs text-orange-400 font-bold uppercase tracking-wider">Pending</p>
+                                <p class="text-xs text-orange-400 font-bold uppercase tracking-wider">In Progress</p>
                                 <?php else: ?>
                                 <p class="text-xs text-muted-dark">Upcoming</p>
                                 <?php endif; ?>
@@ -427,8 +427,8 @@ if ($res = $mysqli->query($sub_check_sql)) {
             
 
         </div>
-        <footer class="mt-24 border-t border-primary/30 pt-8 text-center text-xs text-muted-dark">
-            <p>© 2026 Aditya Institute of Technology and Management.Designed by s vinod kumar | Dept. of CSE </p>
+        <footer class="mt-24 border-t border-primary/30 pt-8">
+            <?php include __DIR__ . '/includes/footer_design.php'; ?>
         </footer>
     </main>
     <div class="md:hidden fixed bottom-6 right-6 z-50">
@@ -548,6 +548,11 @@ if ($res = $mysqli->query($sub_check_sql)) {
             sidebar.classList.toggle('hidden');
         });
     }
+
+    // Auto refresh
+    setTimeout(function() {
+        location.reload();
+    }, 30000);
     </script>
 
 </body>
