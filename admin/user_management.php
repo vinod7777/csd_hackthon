@@ -150,6 +150,16 @@ unset($_SESSION['message'], $_SESSION['message_type']);
     ::-webkit-scrollbar-thumb:hover {
         background: #6b5f8e;
     }
+    @media print {
+        #sidebar, #mobile-menu-btn, .no-print { display: none !important; }
+        main { margin: 0 !important; padding: 0 !important; height: auto !important; overflow: visible !important; }
+        body { background-color: white !important; color: black !important; height: auto !important; overflow: visible !important; }
+        .bg-surface-dark { background-color: white !important; border: 1px solid #ccc !important; color: black !important; box-shadow: none !important; }
+        .bg-background-dark { background-color: white !important; }
+        .text-white { color: black !important; }
+        .text-text-muted { color: #555 !important; }
+        header { position: static !important; background: none !important; border: none !important; }
+    }
     </style>
 </head>
 <body class="bg-background-dark font-display text-white h-screen flex overflow-hidden">
@@ -196,7 +206,11 @@ unset($_SESSION['message'], $_SESSION['message_type']);
             <div class="flex items-center gap-4">
                 <h2 class="text-white text-xl font-bold tracking-tight">User Management</h2>
             </div>
-        
+            <div class="flex items-center gap-3 no-print">
+                <button onclick="window.print()" class="p-2 rounded-lg hover:bg-white/10 text-white transition-colors" title="Print Users">
+                    <span class="material-symbols-outlined">print</span>
+                </button>
+            </div>
         </header>
         <div class="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-surface-dark scrollbar-track-transparent">
             <div class="max-w-[1400px] mx-auto flex flex-col gap-6">

@@ -153,11 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </form>
 
-                <div class="mt-6 p-4 bg-background-dark rounded-lg border border-border-dark">
-                    <p class="text-xs text-text-muted text-center mb-2 font-semibold">Demo Credentials:</p>
-                    <p class="text-xs text-gray-400 text-center">Email: <span class="text-primary font-mono">admin@aitam.com</span></p>
-                    <p class="text-xs text-gray-400 text-center">Password: <span class="text-primary font-mono">admin123</span></p>
-                </div>
+            
             </div>
         </div>
     </main>

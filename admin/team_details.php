@@ -103,12 +103,21 @@ $initials = substr(strtoupper($initials), 0, 2);
     <style>
     .material-symbols-outlined { font-variation-settings: 'FILL'0, 'wght'400, 'GRAD'0, 'opsz'24; }
     body { background-color: #18122B; color: white; }
+    @media print {
+        .no-print { display: none !important; }
+        body { background-color: white !important; color: black !important; }
+        .bg-surface-dark { background-color: white !important; border: 1px solid #ccc !important; color: black !important; box-shadow: none !important; }
+        .bg-background-dark { background-color: white !important; }
+        .text-white { color: black !important; }
+        .text-text-muted { color: #555 !important; }
+        header { position: static !important; background: none !important; border-bottom: 1px solid #ccc !important; }
+    }
     </style>
 </head>
 <body class="bg-background-dark font-display text-white min-h-screen flex flex-col">
     <header class="h-16 border-b border-border-dark/30 bg-background-dark/50 backdrop-blur-md flex items-center justify-between px-6 shrink-0 sticky top-0 z-50">
         <div class="flex items-center gap-4">
-            <a href="user_management.php" class="p-2 rounded-lg hover:bg-surface-dark text-text-muted hover:text-white transition-colors">
+            <a href="user_management.php" class="p-2 rounded-lg hover:bg-surface-dark text-text-muted hover:text-white transition-colors no-print">
                 <span class="material-symbols-outlined">arrow_back</span>
             </a>
             <h2 class="text-white text-xl font-bold tracking-tight">Team Details</h2>
@@ -117,6 +126,9 @@ $initials = substr(strtoupper($initials), 0, 2);
             <span class="px-3 py-1 rounded-full bg-primary/20 text-white border border-primary/20 text-sm font-medium">
                 ID: <?php echo str_pad($team['id'], 3, '0', STR_PAD_LEFT); ?>
             </span>
+            <button onclick="window.print()" class="no-print p-2 rounded-lg hover:bg-white/10 text-white transition-colors" title="Print Details">
+                <span class="material-symbols-outlined">print</span>
+            </button>
         </div>
     </header>
 

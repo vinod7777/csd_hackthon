@@ -64,7 +64,7 @@ if ($allow_check && $row = $allow_check->fetch_assoc()) {
     $submissions_allowed = intval($row['setting_value']) === 1;
 }
 
-$sql = 'SELECT s.id, s.team_id, s.submission_type, s.submission_link, s.submitted_at, t.team_name FROM submissions s LEFT JOIN teams t ON t.id = s.team_id ORDER BY s.submitted_at DESC LIMIT ? OFFSET ?';
+$sql = 'SELECT s.id, s.team_id, s.submission_type, s.submission_link, s.submitted_at, t.team_name, t.leader_name, t.email, t.roll_number, t.phone_number, t.residence, t.address FROM submissions s LEFT JOIN teams t ON t.id = s.team_id ORDER BY s.submitted_at DESC LIMIT ? OFFSET ?';
 $stmt = $mysqli->prepare($sql);
 $submissions = [];
 if ($stmt) {
@@ -75,6 +75,26 @@ if ($stmt) {
         $submissions[] = $row;
     }
     $stmt->close();
+
+    // Fetch members for these submissions
+    if (!empty($submissions)) {
+        $team_ids = array_unique(array_column($submissions, 'team_id'));
+        if (!empty($team_ids)) {
+            $ids_str = implode(',', array_map('intval', $team_ids));
+            $m_sql = "SELECT team_id, member_name, roll_number FROM team_members WHERE team_id IN ($ids_str)";
+            $m_res = $mysqli->query($m_sql);
+            $members_map = [];
+            if ($m_res) {
+                while ($row = $m_res->fetch_assoc()) {
+                    $members_map[$row['team_id']][] = $row;
+                }
+            }
+            foreach ($submissions as &$sub) {
+                $sub['members'] = $members_map[$sub['team_id']] ?? [];
+            }
+            unset($sub);
+        }
+    }
 } else {
     error_log("Error preparing submissions query: " . $mysqli->error);
 }
@@ -136,6 +156,16 @@ if ($stmt) {
     ::-webkit-scrollbar-thumb:hover {
         background: #6b5f8e;
     }
+    @media print {
+        #sidebar, #mobile-menu-btn, .no-print { display: none !important; }
+        main { margin: 0 !important; padding: 0 !important; height: auto !important; overflow: visible !important; }
+        body { background-color: white !important; color: black !important; height: auto !important; overflow: visible !important; }
+        .bg-surface-dark, .bg-surface-dark\/30, .bg-surface-dark\/50 { background-color: white !important; border: 1px solid #ccc !important; color: black !important; box-shadow: none !important; }
+        .bg-background-dark { background-color: white !important; }
+        .text-white { color: black !important; }
+        .text-text-muted { color: #555 !important; }
+        header { position: static !important; background: none !important; border: none !important; }
+    }
     </style>
 </head>
 
@@ -184,7 +214,11 @@ if ($stmt) {
             <div class="flex items-center gap-4">
                 <h2 class="text-white text-xl font-bold tracking-tight">Submission Management</h2>
             </div>
-           
+            <div class="flex items-center gap-3 no-print">
+                <button onclick="window.print()" class="p-2 rounded-lg hover:bg-white/10 text-white transition-colors" title="Print Submissions">
+                    <span class="material-symbols-outlined">print</span>
+                </button>
+            </div>
         </header>
         <div class="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-surface-dark scrollbar-track-transparent">
             <div class="max-w-[1400px] mx-auto flex flex-col gap-6">
@@ -258,8 +292,8 @@ if ($stmt) {
                                                     </td>
                                                     <td class="px-6 py-4">
                                                         <div class="flex items-center gap-3">
-                                                            <div
-                                                                class="h-8 w-8 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center text-white text-xs font-bold shadow-lg shadow-primary/20">
+                                                            <div onclick="openTeamModal(<?php echo htmlspecialchars(json_encode($s), ENT_QUOTES, 'UTF-8'); ?>)"
+                                                                class="cursor-pointer h-8 w-8 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center text-white text-xs font-bold shadow-lg shadow-primary/20 hover:scale-110 transition-transform">
                                                                 <?php $initials = ''; $parts = explode(' ', $s['team_name'] ?? ''); foreach ($parts as $p) { $initials .= substr($p, 0, 1); } echo htmlspecialchars(substr(strtoupper($initials), 0, 2), ENT_QUOTES); ?>
                                                             </div>
                                                             <div>
@@ -351,6 +385,89 @@ if ($stmt) {
         </div>
     </main>
 
+    <!-- Team Details Modal -->
+    <div id="teamModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4" onclick="closeTeamModal(event)">
+        <div class="bg-surface-dark border border-border-dark/30 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col" onclick="event.stopPropagation()">
+            <div class="bg-gradient-to-r from-primary to-secondary/50 p-6 border-b border-border-dark/30 flex items-center justify-between shrink-0">
+                <div>
+                    <h3 class="text-xl font-bold text-white" id="modalTeamName">Team Name</h3>
+                    <p class="text-text-muted text-sm" id="modalTeamId">ID: #TIM-0000</p>
+                </div>
+                <button onclick="closeTeamModal()" class="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                    <span class="material-symbols-outlined text-white">close</span>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div>
+                        <h4 class="text-white font-bold uppercase text-xs tracking-wider mb-3">Team Leader</h4>
+                        <div class="space-y-2">
+                            <div>
+                                <p class="text-xs text-text-muted">Name</p>
+                                <p class="text-white font-medium" id="modalLeaderName">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-text-muted">Roll Number</p>
+                                <p class="text-white font-mono" id="modalLeaderRoll">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-text-muted">Email</p>
+                                <p class="text-white" id="modalLeaderEmail">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-text-muted">Phone</p>
+                                <p class="text-white" id="modalLeaderPhone">-</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-bold uppercase text-xs tracking-wider mb-3">Additional Info</h4>
+                        <div class="space-y-2">
+                            <div>
+                                <p class="text-xs text-text-muted">Residence</p>
+                                <p class="text-white capitalize" id="modalResidence">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-text-muted">Address</p>
+                                <p class="text-white text-sm" id="modalAddress">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-text-muted">Submission Type</p>
+                                <p class="text-white capitalize" id="modalSubType">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-text-muted">Submitted At</p>
+                                <p class="text-white font-mono text-sm" id="modalSubTime">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-white font-bold uppercase text-xs tracking-wider mb-3">Team Members</h4>
+                    <div class="bg-black/20 rounded-xl border border-border-dark/30 overflow-hidden">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-white/5 text-text-muted text-xs uppercase">
+                                <tr>
+                                    <th class="px-4 py-2 font-medium">Name</th>
+                                    <th class="px-4 py-2 font-medium">Roll Number</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-border-dark/30" id="modalMembersList">
+                                <!-- Members populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 border-t border-border-dark/30 bg-surface-dark shrink-0 flex justify-end">
+                <a href="#" id="modalProjectLink" target="_blank" class="px-4 py-2 bg-primary hover:bg-secondary text-white rounded-lg font-medium transition-colors flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg">open_in_new</span> View Project
+                </a>
+            </div>
+        </div>
+    </div>
+
     <script>
                 function filterTable() {
                     const input = document.getElementById('searchInput').value.toLowerCase();
@@ -398,6 +515,44 @@ if ($stmt) {
                     window.URL.revokeObjectURL(url);
                 }
 
+                function openTeamModal(data) {
+                    document.getElementById('modalTeamName').textContent = data.team_name;
+                    document.getElementById('modalTeamId').textContent = 'ID: #TIM-' + String(data.team_id).padStart(4, '0');
+                    
+                    document.getElementById('modalLeaderName').textContent = data.leader_name || '-';
+                    document.getElementById('modalLeaderRoll').textContent = data.roll_number || '-';
+                    document.getElementById('modalLeaderEmail').textContent = data.email || '-';
+                    document.getElementById('modalLeaderPhone').textContent = data.phone_number || '-';
+                    
+                    document.getElementById('modalResidence').textContent = data.residence || '-';
+                    document.getElementById('modalAddress').textContent = data.address || '-';
+                    document.getElementById('modalSubType').textContent = data.submission_type || '-';
+                    document.getElementById('modalSubTime').textContent = data.submitted_at || '-';
+                    
+                    document.getElementById('modalProjectLink').href = data.submission_link || '#';
+                    
+                    const membersList = document.getElementById('modalMembersList');
+                    membersList.innerHTML = '';
+                    
+                    if (data.members && data.members.length > 0) {
+                        data.members.forEach(member => {
+                            const row = `<tr>
+                                <td class="px-4 py-3 text-white">${member.member_name}</td>
+                                <td class="px-4 py-3 text-text-muted font-mono">${member.roll_number || '-'}</td>
+                            </tr>`;
+                            membersList.innerHTML += row;
+                        });
+                    } else {
+                        membersList.innerHTML = '<tr><td colspan="2" class="px-4 py-3 text-text-muted text-center italic">No additional members</td></tr>';
+                    }
+                    
+                    document.getElementById('teamModal').classList.remove('hidden');
+                }
+
+                function closeTeamModal(event) {
+                    if (event && event.target.id !== 'teamModal') return;
+                    document.getElementById('teamModal').classList.add('hidden');
+                }
                 </script>
 <div class="md:hidden fixed bottom-6 right-6 z-50">
 <button id="mobile-menu-btn" class="h-14 w-14 rounded-full bg-primary text-white shadow-2xl flex items-center justify-center">

@@ -248,9 +248,9 @@ if ($res = $mysqli->query($sub_check_sql)) {
                     <h2 class="text-xl font-bold text-white">Hackathon Journey</h2>
                 </div>
                 <div class="relative px-4">
-                    <div class="absolute top-1/2 left-8 right-8 h-1 bg-primary/20 -translate-y-1/2 z-0 hidden md:block">
+                    <div class="absolute top-1/2 left-8 right-8 h-1 bg-primary/20  hidden md:block">
                     </div>
-                    <div class="absolute top-1/2 left-8 h-[<?php echo $progress_percentage; ?>%] h-1 bg-primary -translate-y-1/2 z-0 hidden md:block"
+                    <div class="absolute top-1/2 left-8   bg-primary  hidden md:block"
                         style="width: <?php echo $progress_percentage; ?>%;"></div>
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-8 relative z-10">
                         <div class="flex md:flex-col items-center md:text-center space-x-4 md:space-x-0 group">
@@ -275,7 +275,7 @@ if ($res = $mysqli->query($sub_check_sql)) {
                                     class="font-bold <?php echo $selected_ps ? 'text-emerald-400 text-lg' : ($ps_released ? 'text-orange-500 text-lg' : 'text-muted-dark'); ?>">
                                     PS Selection</h4>
                                 <?php if ($selected_ps): ?>
-                                <p class="text-xs font-bold text-emerald-300 uppercase tracking-wider mt-1">✓ Selected
+                                <p class="text-xs font-bold text-emerald-300 uppercase tracking-wider mt-1">Selected
                                 </p>
                                 <p class="text-xs text-emerald-200/80 mt-1">
                                     <?php echo htmlspecialchars($selected_ps['stmt_name'], ENT_QUOTES, 'UTF-8'); ?></p>

@@ -178,6 +178,16 @@ if ($result) {
     ::-webkit-scrollbar-thumb:hover {
         background: #6b5f8e;
     }
+    @media print {
+        #sidebar, #mobile-menu-btn, .no-print, form[enctype="multipart/form-data"] { display: none !important; }
+        main { margin: 0 !important; padding: 0 !important; height: auto !important; overflow: visible !important; }
+        body { background-color: white !important; color: black !important; height: auto !important; overflow: visible !important; }
+        .bg-surface-dark, .bg-surface-dark\/50 { background-color: white !important; border: 1px solid #ccc !important; color: black !important; box-shadow: none !important; }
+        .bg-background-dark { background-color: white !important; }
+        .text-white { color: black !important; }
+        .text-text-muted { color: #555 !important; }
+        header { display: none !important; }
+    }
     </style>
 </head>
 
@@ -255,13 +265,13 @@ if ($result) {
                             <form method="POST" class="inline">
                                 <input type="hidden" name="action" value="toggle_release" />
                                 <?php 
-$ps_released = false;
-$check_sql = "SELECT setting_value FROM admin_settings WHERE setting_key = 'release_ps' LIMIT 1";
-$result = $mysqli->query($check_sql);
-if ($result && $row = $result->fetch_assoc()) {
-    $ps_released = ($row['setting_value'] === '1' || $row['setting_value'] === 'true');
-}
-?>
+                                $ps_released = false;
+                                $check_sql = "SELECT setting_value FROM admin_settings WHERE setting_key = 'release_ps' LIMIT 1";
+                                $result = $mysqli->query($check_sql);
+                                if ($result && $row = $result->fetch_assoc()) {
+                                    $ps_released = ($row['setting_value'] === '1' || $row['setting_value'] === 'true');
+                                }
+                                ?>
                                 <input type="hidden" name="release_status"
                                     value="<?php echo $ps_released ? '0' : '1'; ?>" />
                                 <button type="submit"
@@ -275,7 +285,12 @@ if ($result && $row = $result->fetch_assoc()) {
                     </div>
 
                     <div class="flex flex-col gap-2 mb-8">
-                        <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-white">Problem Statements</h2>
+                        <div class="flex justify-between items-start">
+                            <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-white">Problem Statements</h2>
+                            <button onclick="window.print()" class="no-print p-2 rounded-lg bg-surface-dark border border-border-dark/30 text-white hover:bg-primary/20 transition-colors" title="Print List">
+                                <span class="material-symbols-outlined">print</span>
+                            </button>
+                        </div>
                         <p class="text-text-muted text-base md:text-lg">Upload and manage challenge descriptions for
                             participants.</p>
                     </div>
@@ -340,7 +355,7 @@ if ($result && $row = $result->fetch_assoc()) {
                                         </tr>
                                         <?php else: ?>
                                         <?php foreach ($problem_statements as $ps): ?>
-                                        <tr class="hover:bg-surface-dark transition-colors">
+                                        <tr class="hover:bg-surface-dark transition-colors cursor-pointer" onclick="window.location.href='ps_details.php?id=<?php echo $ps['id']; ?>'">
                                             <td class="px-6 py-4 text-sm text-white">
                                                 <?php echo htmlspecialchars($ps['sno']); ?></td>
                                             <td class="px-6 py-4 text-sm text-white font-medium">
@@ -361,7 +376,7 @@ if ($result && $row = $result->fetch_assoc()) {
                                                     <?php echo $ps['is_active'] ? 'Active' : 'Inactive'; ?>
                                                 </span>
                                             </td>
-                                            <td class="px-6 py-4 text-right whitespace-nowrap">
+                                            <td class="px-6 py-4 text-right whitespace-nowrap" onclick="event.stopPropagation()">
                                                 <form method="POST" class="inline-block">
                                                     <input type="hidden" name="action" value="toggle_active" />
                                                     <input type="hidden" name="ps_id"

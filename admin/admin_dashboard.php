@@ -13,6 +13,7 @@ $totals = [
     'ps_total' => 0,
     'ps_active' => 0,
     'submissions_open' => true,
+    'ps_released' => false,
 ];
 
 $res = $mysqli->query('SELECT COUNT(*) AS cnt FROM teams');
@@ -30,6 +31,11 @@ if ($res && $r = $res->fetch_assoc()) $totals['ps_active'] = (int)$r['cnt'];
 $res = $mysqli->query("SELECT setting_value FROM admin_settings WHERE setting_key = 'allow_submissions' LIMIT 1");
 if ($res && $r = $res->fetch_assoc()) {
     $totals['submissions_open'] = ($r['setting_value'] === '1' || $r['setting_value'] === 'true');
+}
+
+$res = $mysqli->query("SELECT setting_value FROM admin_settings WHERE setting_key = 'release_ps' LIMIT 1");
+if ($res && $r = $res->fetch_assoc()) {
+    $totals['ps_released'] = ($r['setting_value'] === '1' || $r['setting_value'] === 'true');
 }
 
 $res = $mysqli->query('SELECT COUNT(*) AS cnt FROM team_members');
@@ -135,6 +141,16 @@ if ($result = $mysqli->query($sql)) {
     ::-webkit-scrollbar-thumb:hover {
         background: #6b5f8e;
     }
+    @media print {
+        #sidebar, #mobile-menu-btn, .no-print { display: none !important; }
+        main { margin: 0 !important; padding: 0 !important; height: auto !important; overflow: visible !important; }
+        body { background-color: white !important; color: black !important; height: auto !important; overflow: visible !important; }
+        .bg-surface-dark { background-color: white !important; border: 1px solid #ccc !important; color: black !important; box-shadow: none !important; }
+        .bg-background-dark { background-color: white !important; }
+        .text-white { color: black !important; }
+        .text-text-muted { color: #555 !important; }
+        header { position: static !important; background: none !important; border: none !important; }
+    }
     </style>
 </head>
 
@@ -184,6 +200,11 @@ if ($result = $mysqli->query($sql)) {
             class="h-16 border-b border-border-dark/30 bg-background-dark/50 backdrop-blur-md flex items-center justify-between px-6 shrink-0 z-10">
             <div class="flex items-center gap-4">
                 <h2 class="text-white text-xl font-bold tracking-tight">Dashboard Overview</h2>
+            </div>
+            <div class="flex items-center gap-3 no-print">
+                <button onclick="window.print()" class="p-2 rounded-lg hover:bg-white/10 text-white transition-colors" title="Print Dashboard">
+                    <span class="material-symbols-outlined">print</span>
+                </button>
             </div>
         </header>
         <div class="flex-1 overflow-y-auto p-6 md:p-8 lg:p-12">
@@ -261,17 +282,64 @@ if ($result = $mysqli->query($sql)) {
                         <div class="flex items-center justify-between mb-6">
                             <h3 class="font-bold text-lg text-white">Activity Summary</h3>
                         </div>
-                        <div class="space-y-4 text-white">
-                            <p class="text-sm leading-relaxed"><span class="font-medium">Teams Registered:</span>
-                                <?php echo $totals['teams']; ?> teams are actively participating</p>
-                            <p class="text-sm leading-relaxed"><span class="font-medium">Submissions:</span>
-                                <?php echo $totals['submissions']; ?> submissions received (Status:
-                                <?php echo $totals['submissions_open'] ? ' Open' : ' Closed'; ?>)</p>
-                            <p class="text-sm leading-relaxed"><span class="font-medium">Problem Statements:</span>
-                                <?php echo $totals['ps_active']; ?> out of <?php echo $totals['ps_total']; ?> are active
-                            </p>
-                            <p class="text-sm leading-relaxed"><span class="font-medium">Active Participants:</span>
-                                <?php echo $totals['participants']; ?> members total</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <!-- Teams -->
+                            <div class="bg-background-dark/50 p-4 rounded-lg border border-border-dark/30 flex items-center gap-4 hover:border-primary/50 transition-colors">
+                                <div class="p-3 rounded-full bg-primary/20 text-primary">
+                                    <span class="material-symbols-outlined">groups</span>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-text-muted uppercase font-bold tracking-wider">Teams Registered</p>
+                                    <p class="text-2xl font-bold text-white mt-1"><?php echo $totals['teams']; ?></p>
+                                    <p class="text-xs text-text-muted">Active teams</p>
+                                </div>
+                            </div>
+
+                            <!-- Participants -->
+                            <div class="bg-background-dark/50 p-4 rounded-lg border border-border-dark/30 flex items-center gap-4 hover:border-blue-500/50 transition-colors">
+                                <div class="p-3 rounded-full bg-blue-500/20 text-blue-400">
+                                    <span class="material-symbols-outlined">person</span>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-text-muted uppercase font-bold tracking-wider">Participants</p>
+                                    <p class="text-2xl font-bold text-white mt-1"><?php echo $totals['participants']; ?></p>
+                                    <p class="text-xs text-text-muted">Total members</p>
+                                </div>
+                            </div>
+
+                            <!-- Submissions -->
+                            <div class="bg-background-dark/50 p-4 rounded-lg border border-border-dark/30 flex items-center gap-4 hover:border-emerald-500/50 transition-colors">
+                                <div class="p-3 rounded-full <?php echo $totals['submissions_open'] ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'; ?>">
+                                    <span class="material-symbols-outlined">cloud_upload</span>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-text-muted uppercase font-bold tracking-wider">Submissions</p>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <p class="text-2xl font-bold text-white"><?php echo $totals['submissions']; ?></p>
+                                        <span class="text-[10px] px-2 py-0.5 rounded-full font-bold <?php echo $totals['submissions_open'] ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'; ?>">
+                                            <?php echo $totals['submissions_open'] ? 'OPEN' : 'CLOSED'; ?>
+                                        </span>
+                                    </div>
+                                    <p class="text-xs text-text-muted">Projects received</p>
+                                </div>
+                            </div>
+
+                            <!-- Problem Statements -->
+                            <div class="bg-background-dark/50 p-4 rounded-lg border border-border-dark/30 flex items-center gap-4 hover:border-orange-500/50 transition-colors">
+                                <div class="p-3 rounded-full <?php echo $totals['ps_released'] ? 'bg-orange-500/20 text-orange-400' : 'bg-gray-700/20 text-gray-400'; ?>">
+                                    <span class="material-symbols-outlined">description</span>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-text-muted uppercase font-bold tracking-wider">Problem Statements</p>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <p class="text-2xl font-bold text-white"><?php echo $totals['ps_active']; ?> <span class="text-sm text-text-muted font-normal">/ <?php echo $totals['ps_total']; ?></span></p>
+                                        <span class="text-[10px] px-2 py-0.5 rounded-full font-bold <?php echo $totals['ps_released'] ? 'bg-orange-500/20 text-orange-400' : 'bg-gray-700/20 text-gray-400'; ?>">
+                                            <?php echo $totals['ps_released'] ? 'RELEASED' : 'HIDDEN'; ?>
+                                        </span>
+                                    </div>
+                                    <p class="text-xs text-text-muted">Active / Total</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
