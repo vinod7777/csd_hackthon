@@ -92,9 +92,11 @@
         </div>
     </nav>
     
-    <header class="relative overflow-hidden py-16 md:py-24 bg-background-light dark:bg-background-dark">
+    <header class="relative overflow-hidden  bg-background-light dark:bg-background-dark">
+        <img class="mx-auto h-24 w-24" src="assets/image/25.png" alt="">
         <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-size: 40px 40px; background-image: linear-gradient(to right, #9ca3af 1px, transparent 1px), linear-gradient(to bottom, #9ca3af 1px, transparent 1px);"></div>
         <div class="container mx-auto px-4 relative z-10 text-center">
+            
             <span class="inline-block py-1 px-3 rounded-full bg-red-100 dark:bg-red-900/30 text-primary font-bold text-xs uppercase tracking-widest mb-4 border border-red-200 dark:border-red-900">
                 ISTE Student Chapter Presents
             </span>
@@ -305,15 +307,15 @@
                 </div>
                 <a href="register.php" class="bg-primary hover:bg-red-800 text-white font-bold py-3 px-10 rounded-lg shadow-lg uppercase tracking-wider transition-all transform hover:scale-105">
                     Register Now
-                </a>
+                </a> 
             </div>
         </div>
     </section>
     
     <footer class="bg-secondary text-white pt-12 pb-6">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-                <div class="text-center md:text-left">
+        <div class="container  mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+                <div class="text-center mx-auto md:text-left">
                     <h5 class="font-display text-xl font-bold mb-4 border-b border-gray-600 inline-block pb-1">Contact Us</h5>
                     <div class="space-y-2 text-gray-300">
                         <div class="flex items-center justify-center md:justify-start">
@@ -332,9 +334,8 @@
                 </div>
                 <div class="text-center">
                     <h5 class="font-display text-xl font-bold mb-4">Organized By</h5>
-                    <p class="text-lg font-bold text-red-400 mb-1">Department of CSD</p>
-                    <p class="text-sm text-gray-400">&</p>
-                    <p class="text-md font-semibold text-gray-300 mt-1">Institution's Innovation Council</p>
+                    <p class="text-lg font-bold mb-1 text-red-400 mb-1">Department of CSD</p>
+                    <p class="text-md font-semibold mt-2 text-gray-300 mt-1">Web Site <br> Designed by <a class="text-blue-400 hover:text-blue-300" href="https://www.linkedin.com/in/saisateeshwarareddy/">T. Saisateeshwara Reddy </a>| Technical Trainer, IIC <br> Developed by <a class="text-blue-400 hover:text-blue-300" href="https://github.com/vinod7777">S Vinod kumar</a> | Dept. of CSE</p>
                 </div>
                 
             </div>

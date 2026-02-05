@@ -331,7 +331,35 @@ if ($res = $mysqli->query($sub_check_sql)) {
                     </div>
                 </div>
             </section>
-
+                <?php if ($selected_ps): ?>
+            <section>
+                <div class="flex items-center space-x-3 mb-6">
+                    <span class="material-symbols-outlined text-emerald-400">check_circle</span>
+                    <h2 class="text-xl font-bold text-white">Your Selected Problem Statement</h2>
+                </div>
+                <div
+                    class="bg-gradient-to-br from-emerald-900/20 to-emerald-900/5 border border-emerald-500/30 rounded-2xl p-6 shadow-sm">
+                    <div class="flex items-start gap-4">
+                        <div
+                            class="h-12 w-12 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400 flex-shrink-0">
+                            <span class="material-symbols-outlined">assignment_turned_in</span>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-2xl font-bold text-white mb-2">Problem
+                                #<?php echo htmlspecialchars($selected_ps['sno'], ENT_QUOTES, 'UTF-8'); ?> -
+                                <?php echo htmlspecialchars($selected_ps['stmt_name'], ENT_QUOTES, 'UTF-8'); ?></h3>
+                            <button onclick="openPSModal()"
+                                class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-medium text-sm transition-colors cursor-pointer">
+                                <span>View Full Details</span>
+                                <span class="material-symbols-outlined text-lg">arrow_forward</span>
+                            </button>
+                        </div>
+                        <span
+                            class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 flex-shrink-0">Selected</span>
+                    </div>
+                </div>
+            </section>
+            <?php endif; ?>
             <section>
                 <div class="flex items-center space-x-3 mb-6">
                     <span class="material-symbols-outlined text-primary">groups</span>
@@ -392,39 +420,11 @@ if ($res = $mysqli->query($sub_check_sql)) {
 
             </section>
 
-            <?php if ($selected_ps): ?>
-            <section>
-                <div class="flex items-center space-x-3 mb-6">
-                    <span class="material-symbols-outlined text-emerald-400">check_circle</span>
-                    <h2 class="text-xl font-bold text-white">Your Selected Problem Statement</h2>
-                </div>
-                <div
-                    class="bg-gradient-to-br from-emerald-900/20 to-emerald-900/5 border border-emerald-500/30 rounded-2xl p-6 shadow-sm">
-                    <div class="flex items-start gap-4">
-                        <div
-                            class="h-12 w-12 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400 flex-shrink-0">
-                            <span class="material-symbols-outlined">assignment_turned_in</span>
-                        </div>
-                        <div class="flex-1">
-                            <h3 class="text-2xl font-bold text-white mb-2">Problem
-                                #<?php echo htmlspecialchars($selected_ps['sno'], ENT_QUOTES, 'UTF-8'); ?> -
-                                <?php echo htmlspecialchars($selected_ps['stmt_name'], ENT_QUOTES, 'UTF-8'); ?></h3>
-                            <button onclick="openPSModal()"
-                                class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-medium text-sm transition-colors cursor-pointer">
-                                <span>View Full Details</span>
-                                <span class="material-symbols-outlined text-lg">arrow_forward</span>
-                            </button>
-                        </div>
-                        <span
-                            class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 flex-shrink-0">Selected</span>
-                    </div>
-                </div>
-            </section>
-            <?php endif; ?>
+            
 
         </div>
         <footer class="mt-24 border-t border-primary/30 pt-8 text-center text-xs text-muted-dark">
-            <p>© 2026 Aditya Institute of Technology and Management. Organized by Dept of CSD &amp; IIC.</p>
+            <p>© 2026 Aditya Institute of Technology and Management.Designed by s vinod kumar | Dept. of CSE </p>
         </footer>
     </main>
     <div class="md:hidden fixed bottom-6 right-6 z-50">

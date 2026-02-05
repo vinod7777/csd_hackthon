@@ -210,8 +210,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
                 <div class="relative z-10 mt-12 md:mt-0">
-                    <p class="text-sm text-red-200">Organized by Department of CSD &amp; Institution's Innovation
-                        Council</p>
+                    <p class="text-sm text-red-200">© 2026 Aditya Institute of Technology and Management.Designed by S Vinod kumar | Dept. of CSE </p>
                 </div>
             </div>
             <div
