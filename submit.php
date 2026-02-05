@@ -260,11 +260,11 @@ $initials = strtoupper(substr($team['leader_name'], 0, 1) . substr(explode(' ', 
                         <label class="block text-sm font-medium text-white mb-3">Submission Type</label>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <label
-                                class="relative flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all <?php echo (isset($_POST['submission_type']) && $_POST['submission_type'] === 'github') || ($existing_submission && $existing_submission['submission_type'] === 'github') ? 'border-primary bg-primary/10' : 'border-primary/30 hover:border-primary/50'; ?>">
+                                class="relative flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all <?php echo (isset($_POST['submission_type']) && $_POST['submission_type'] === 'github') || ($existing_submission && $existing_submission['submission_type'] === 'github') ? 'border-emerald-500 bg-emerald-500/10' : 'border-primary/30 hover:border-primary/50'; ?>">
                                 <input type="radio" name="submission_type" value="github" class="sr-only" required
                                     <?php echo ($existing_submission && $existing_submission['submission_type'] === 'github') ? 'checked' : ''; ?> />
                                 <div class="flex items-center gap-3">
-                                    <span class="material-icons-outlined text-primary text-2xl">code</span>
+                                    <span class="material-icons-outlined text-white text-2xl">code</span>
                                     <div>
                                         <p class="font-semibold text-white">GitHub Repository</p>
                                         <p class="text-xs text-muted-dark">Share your code repository</p>
@@ -272,11 +272,11 @@ $initials = strtoupper(substr($team['leader_name'], 0, 1) . substr(explode(' ', 
                                 </div>
                             </label>
                             <label
-                                class="relative flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all <?php echo (isset($_POST['submission_type']) && $_POST['submission_type'] === 'drive') || ($existing_submission && $existing_submission['submission_type'] === 'drive') ? 'border-primary bg-primary/10' : 'border-primary/30 hover:border-primary/50'; ?>">
+                                class="relative flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all <?php echo (isset($_POST['submission_type']) && $_POST['submission_type'] === 'drive') || ($existing_submission && $existing_submission['submission_type'] === 'drive') ? 'border-emerald-500 bg-emerald-500/10' : 'border-primary/30 hover:border-primary/50'; ?>">
                                 <input type="radio" name="submission_type" value="drive" class="sr-only" required
                                     <?php echo ($existing_submission && $existing_submission['submission_type'] === 'drive') ? 'checked' : ''; ?> />
                                 <div class="flex items-center gap-3">
-                                    <span class="material-icons-outlined text-primary text-2xl">folder</span>
+                                    <span class="material-icons-outlined text-white text-2xl">folder</span>
                                     <div>
                                         <p class="font-semibold text-white">Google Drive</p>
                                         <p class="text-xs text-muted-dark">Share your project files</p>
@@ -359,15 +359,30 @@ $initials = strtoupper(substr($team['leader_name'], 0, 1) . substr(explode(' ', 
             }
         }
 
+        function updateVisualSelection() {
+            radios.forEach(function(r) {
+                const label = r.closest('label');
+                if (r.checked) {
+                    label.classList.remove('border-primary/30', 'hover:border-primary/50');
+                    label.classList.add('border-emerald-500', 'bg-emerald-500/10');
+                } else {
+                    label.classList.add('border-primary/30', 'hover:border-primary/50');
+                    label.classList.remove('border-emerald-500', 'bg-emerald-500/10');
+                }
+            });
+        }
+
         radios.forEach(function(r) {
             r.addEventListener('change', function(e) {
                 updatePlaceholder(e.target.value);
+                updateVisualSelection();
             });
         });
 
         const checked = document.querySelector('input[name="submission_type"]:checked');
         if (checked) {
             updatePlaceholder(checked.value);
+            updateVisualSelection();
         } else {
             updatePlaceholder(
                 '<?php echo ($existing_submission && $existing_submission['submission_type'] === 'drive') ? 'drive' : 'github'; ?>'
