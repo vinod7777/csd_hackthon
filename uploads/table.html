@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hackathon Jury Table View</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                        "surface-dark": "#192233",
+                        "border-dark": "#324467",
+                        "text-muted": "#92a4c9",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for better look in dark mode */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #101622; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #324467; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4a6393; 
+        }
+        
+        /* Hide number input spinners */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display h-screen flex flex-col overflow-hidden text-white">
+<!-- Top App Bar -->
+<header class="flex-none bg-[#111722] border-b border-border-dark p-4 flex items-center justify-between z-50 relative shadow-md">
+<div class="flex items-center gap-4">
+<button class="text-white flex items-center justify-center p-1 hover:bg-white/10 rounded-full transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h2 class="text-lg font-bold leading-tight tracking-tight">Judging Dashboard</h2>
+</div>
+<button class="text-text-muted text-sm font-bold hover:text-white transition-colors">Help</button>
+</header>
+<!-- Info / Stats Bar -->
+<section class="flex-none bg-[#111722] px-4 py-3 grid grid-cols-2 gap-4 border-b border-border-dark">
+<div class="flex flex-col gap-1">
+<p class="text-text-muted text-xs uppercase tracking-wider font-semibold">Status</p>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+<p class="text-white text-sm font-medium">Live Judging</p>
+</div>
+</div>
+<div class="flex flex-col gap-1 items-end">
+<p class="text-text-muted text-xs uppercase tracking-wider font-semibold">Progress</p>
+<p class="text-white text-sm font-medium"><span class="text-primary">3</span>/10 Scored</p>
+</div>
+</section>
+<!-- Main Table Area -->
+<!-- Flex grow to fill remaining space, overflow hidden to contain the scrollable table -->
+<main class="flex-1 overflow-hidden relative w-full">
+<!-- Table Wrapper for scrolling -->
+<div class="h-full overflow-auto w-full">
+<table class="w-full border-collapse text-left min-w-max">
+<thead class="bg-[#111722] text-sm font-semibold text-text-muted">
+<!-- Super Header Row (Rounds) -->
+<tr>
+<!-- Top Left Corner (Empty/Fixed) -->
+<th class="sticky left-0 top-0 z-50 bg-[#111722] p-0 border-b border-r border-border-dark w-[160px] min-w-[160px]">
+<div class="h-10 flex items-center justify-center bg-[#192233]">
+<span class="text-xs font-bold text-white">TEAMS</span>
+</div>
+</th>
+<!-- Round 1 Header -->
+<th class="sticky top-0 z-40 bg-[#111722] border-b border-border-dark h-10 px-2 text-center text-xs uppercase tracking-wider text-white bg-primary/20 border-r border-border-dark" colspan="3">
+                            Round 1
+                        </th>
+<!-- Round 1.1 Header -->
+<th class="sticky top-0 z-40 bg-[#111722] border-b border-border-dark h-10 px-2 text-center text-xs uppercase tracking-wider text-white bg-purple-500/20 border-r border-border-dark" colspan="2">
+                            Round 1.1
+                        </th>
+<!-- Round 2 Header -->
+<th class="sticky top-0 z-40 bg-[#111722] border-b border-border-dark h-10 px-2 text-center text-xs uppercase tracking-wider text-white bg-orange-500/20 border-r border-border-dark" colspan="2">
+                            Round 2
+                        </th>
+<!-- Total Header -->
+<th class="sticky top-0 z-40 bg-[#111722] border-b border-border-dark h-10 px-2 text-center text-xs uppercase tracking-wider text-primary">
+                            Final
+                        </th>
+</tr>
+<!-- Metrics Header Row -->
+<tr>
+<!-- Sticky Left Column Header -->
+<th class="sticky left-0 top-10 z-50 bg-[#111722] border-b border-r border-border-dark p-3 text-xs font-medium text-text-muted w-[160px] min-w-[160px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.5)]">
+                           Team Name
+                        </th>
+<!-- R1 Metrics -->
+<th class="sticky top-10 z-30 bg-[#111722] border-b border-border-dark p-2 text-center w-24 min-w-24 text-xs font-normal">Problem</th>
+<th class="sticky top-10 z-30 bg-[#111722] border-b border-border-dark p-2 text-center w-24 min-w-24 text-xs font-normal">Relevance</th>
+<th class="sticky top-10 z-30 bg-[#111722] border-b border-r border-border-dark p-2 text-center w-24 min-w-24 text-xs font-normal">Feasibility</th>
+<!-- R1.1 Metrics -->
+<th class="sticky top-10 z-30 bg-[#111722] border-b border-border-dark p-2 text-center w-24 min-w-24 text-xs font-normal">UI/UX</th>
+<th class="sticky top-10 z-30 bg-[#111722] border-b border-r border-border-dark p-2 text-center w-24 min-w-24 text-xs font-normal">Features</th>
+<!-- R2 Metrics -->
+<th class="sticky top-10 z-30 bg-[#111722] border-b border-border-dark p-2 text-center w-24 min-w-24 text-xs font-normal">Logic</th>
+<th class="sticky top-10 z-30 bg-[#111722] border-b border-r border-border-dark p-2 text-center w-24 min-w-24 text-xs font-normal">Present.</th>
+<!-- Total Metric -->
+<th class="sticky top-10 z-30 bg-[#111722] border-b border-border-dark p-2 text-center w-24 min-w-24 text-xs font-bold text-white">Total</th>
+</tr>
+</thead>
+<!-- Table Body -->
+<tbody class="divide-y divide-border-dark bg-[#101622]">
+<!-- Row 1 -->
+<tr class="group hover:bg-surface-dark/50 transition-colors">
+<td class="sticky left-0 z-20 bg-[#101622] border-r border-border-dark p-3 w-[160px] min-w-[160px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.5)] group-hover:bg-[#151c2a]">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs font-bold border border-blue-500/30">AS</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-white truncate max-w-[100px]">Alpha Squad</span>
+<span class="text-[10px] text-text-muted">ID: #001</span>
+</div>
+</div>
+</td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center font-bold text-primary text-sm">0</td>
+</tr>
+<!-- Row 2 -->
+<tr class="group hover:bg-surface-dark/50 transition-colors bg-[#131a29]/30"> <!-- Zebra Striping -->
+<td class="sticky left-0 z-20 bg-[#131a29] border-r border-border-dark p-3 w-[160px] min-w-[160px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.5)] group-hover:bg-[#151c2a]">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs font-bold border border-emerald-500/30">CN</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-white truncate max-w-[100px]">Code Ninjas</span>
+<span class="text-[10px] text-text-muted">ID: #002</span>
+</div>
+</div>
+</td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" type="number" value="8"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" type="number" value="9"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" type="number" value="7"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" type="number" value="8"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" type="number" value="8"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" type="number" value="6"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" type="number" value="9"/></td>
+<td class="p-2 text-center font-bold text-primary text-sm">55</td>
+</tr>
+<!-- Row 3 -->
+<tr class="group hover:bg-surface-dark/50 transition-colors">
+<td class="sticky left-0 z-20 bg-[#101622] border-r border-border-dark p-3 w-[160px] min-w-[160px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.5)] group-hover:bg-[#151c2a]">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-xs font-bold border border-purple-500/30">BT</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-white truncate max-w-[100px]">Beta Team</span>
+<span class="text-[10px] text-text-muted">ID: #003</span>
+</div>
+</div>
+</td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" type="number" value="5"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" type="number" value="6"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" type="number" value="4"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center font-bold text-primary text-sm">15</td>
+</tr>
+<!-- Row 4 -->
+<tr class="group hover:bg-surface-dark/50 transition-colors bg-[#131a29]/30">
+<td class="sticky left-0 z-20 bg-[#131a29] border-r border-border-dark p-3 w-[160px] min-w-[160px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.5)] group-hover:bg-[#151c2a]">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center text-xs font-bold border border-orange-500/30">GG</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-white truncate max-w-[100px]">Gamma Group</span>
+<span class="text-[10px] text-text-muted">ID: #004</span>
+</div>
+</div>
+</td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" type="number" value="10"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" type="number" value="10"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" type="number" value="9"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" type="number" value="9"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" type="number" value="8"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" type="number" value="10"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" type="number" value="10"/></td>
+<td class="p-2 text-center font-bold text-primary text-sm">66</td>
+</tr>
+<!-- Row 5 -->
+<tr class="group hover:bg-surface-dark/50 transition-colors">
+<td class="sticky left-0 z-20 bg-[#101622] border-r border-border-dark p-3 w-[160px] min-w-[160px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.5)] group-hover:bg-[#151c2a]">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-pink-500/20 text-pink-400 flex items-center justify-center text-xs font-bold border border-pink-500/30">DF</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-white truncate max-w-[100px]">Delta Force</span>
+<span class="text-[10px] text-text-muted">ID: #005</span>
+</div>
+</div>
+</td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center font-bold text-primary text-sm">0</td>
+</tr>
+<!-- Row 6 -->
+<tr class="group hover:bg-surface-dark/50 transition-colors bg-[#131a29]/30">
+<td class="sticky left-0 z-20 bg-[#131a29] border-r border-border-dark p-3 w-[160px] min-w-[160px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.5)] group-hover:bg-[#151c2a]">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-yellow-500/20 text-yellow-400 flex items-center justify-center text-xs font-bold border border-yellow-500/30">EP</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-white truncate max-w-[100px]">Epsilon</span>
+<span class="text-[10px] text-text-muted">ID: #006</span>
+</div>
+</div>
+</td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center font-bold text-primary text-sm">0</td>
+</tr>
+<!-- Row 7 -->
+<tr class="group hover:bg-surface-dark/50 transition-colors">
+<td class="sticky left-0 z-20 bg-[#101622] border-r border-border-dark p-3 w-[160px] min-w-[160px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.5)] group-hover:bg-[#151c2a]">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-xs font-bold border border-cyan-500/30">ZE</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-white truncate max-w-[100px]">Zeta</span>
+<span class="text-[10px] text-text-muted">ID: #007</span>
+</div>
+</div>
+</td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center font-bold text-primary text-sm">0</td>
+</tr>
+<!-- Row 8 -->
+<tr class="group hover:bg-surface-dark/50 transition-colors bg-[#131a29]/30">
+<td class="sticky left-0 z-20 bg-[#131a29] border-r border-border-dark p-3 w-[160px] min-w-[160px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.5)] group-hover:bg-[#151c2a]">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center text-xs font-bold border border-red-500/30">OM</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-white truncate max-w-[100px]">Omega</span>
+<span class="text-[10px] text-text-muted">ID: #008</span>
+</div>
+</div>
+</td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center font-bold text-primary text-sm">0</td>
+</tr>
+<!-- Row 9 -->
+<tr class="group hover:bg-surface-dark/50 transition-colors">
+<td class="sticky left-0 z-20 bg-[#101622] border-r border-border-dark p-3 w-[160px] min-w-[160px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.5)] group-hover:bg-[#151c2a]">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xs font-bold border border-indigo-500/30">TH</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-white truncate max-w-[100px]">Theta</span>
+<span class="text-[10px] text-text-muted">ID: #009</span>
+</div>
+</div>
+</td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center font-bold text-primary text-sm">0</td>
+</tr>
+<!-- Row 10 -->
+<tr class="group hover:bg-surface-dark/50 transition-colors bg-[#131a29]/30">
+<td class="sticky left-0 z-20 bg-[#131a29] border-r border-border-dark p-3 w-[160px] min-w-[160px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.5)] group-hover:bg-[#151c2a]">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-teal-500/20 text-teal-400 flex items-center justify-center text-xs font-bold border border-teal-500/30">IO</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-white truncate max-w-[100px]">Iota</span>
+<span class="text-[10px] text-text-muted">ID: #010</span>
+</div>
+</div>
+</td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 border-r border-border-dark text-center"><input class="w-full h-10 bg-surface-dark border border-border-dark rounded text-center text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-gray-700 text-sm" max="10" min="0" placeholder="-" type="number"/></td>
+<td class="p-2 text-center font-bold text-primary text-sm">0</td>
+</tr>
+</tbody>
+</table>
+<!-- Space for FAB at bottom -->
+<div class="h-24 w-full"></div>
+</div>
+</main>
+<!-- Floating Footer Action -->
+<footer class="absolute bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md z-50">
+<button class="w-full h-14 bg-primary hover:bg-blue-600 rounded-full shadow-lg shadow-blue-500/20 text-white font-bold text-base tracking-wide flex items-center justify-center gap-2 transition-transform active:scale-[0.98]">
+<span class="material-symbols-outlined">check_circle</span>
+            Submit All Scores
+        </button>
+</footer>
+</body></html>
