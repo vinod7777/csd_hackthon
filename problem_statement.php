@@ -54,18 +54,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['select_ps'])) {
         } else if ($has_selection && $existing_ps_id == $ps_id) {
             $message = 'You have already selected this problem statement.';
             $message_type = 'error';
-        } else {
-            $insert_sql = 'INSERT INTO team_ps_selection (team_id, ps_id) VALUES (?, ?)';
-            if ($stmt = $mysqli->prepare($insert_sql)) {
-                $stmt->bind_param('ii', $user_id, $ps_id);
-                if ($stmt->execute()) {
-                    $message = 'Problem statement selected successfully!';
-                    $message_type = 'success';
-                } else {
-                    $message = 'Failed to select problem statement.';
-                    $message_type = 'error';
-                }
+        }else {
+            // START TRANSACTION
+            $mysqli->begin_transaction();
+
+            try {
+
+                // 🔒 Lock the row so no other user can select at same time
+                $lock_sql = "SELECT slot FROM problem_statements WHERE id = ? FOR UPDATE";
+                $stmt = $mysqli->prepare($lock_sql);
+                $stmt->bind_param('i', $ps_id);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $ps = $result->fetch_assoc();
                 $stmt->close();
+
+                if (!$ps) {
+                    throw new Exception("Problem statement not found.");
+                }
+
+                $total_slots = $ps['slot'];
+
+                // Count current selections (inside lock)
+                $count_sql = "SELECT COUNT(*) as cnt FROM team_ps_selection WHERE ps_id = ?";
+                $stmt = $mysqli->prepare($count_sql);
+                $stmt->bind_param('i', $ps_id);
+                $stmt->execute();
+                $count = $stmt->get_result()->fetch_assoc()['cnt'];
+                $stmt->close();
+
+                // ❌ Slot full → rollback
+                if ($count >= $total_slots) {
+                    throw new Exception("All slots are already filled by other teams.");
+                }
+
+                // ✅ Insert selection
+                $insert_sql = "INSERT INTO team_ps_selection (team_id, ps_id) VALUES (?, ?)";
+                $stmt = $mysqli->prepare($insert_sql);
+                $stmt->bind_param('ii', $user_id, $ps_id);
+
+                if (!$stmt->execute()) {
+                    throw new Exception("Failed to insert.");
+                }
+
+                $stmt->close();
+
+                // ✅ Commit
+                $mysqli->commit();
+
+                $message = "Problem statement selected successfully!";
+                $message_type = "success";
+
+            } catch (Exception $e) {
+
+                // 🔄 Rollback
+                $mysqli->rollback();
+
+                $message = $e->getMessage();
+                $message_type = "error";
             }
         }
     }
