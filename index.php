@@ -1,3 +1,51 @@
+<?php
+require_once __DIR__ . '/includes/db.php';
+
+$current_time = time();
+$hackathon_start_time = null;
+
+// Check for hackathon start time
+$settings_sql = "SELECT setting_value FROM admin_settings WHERE setting_key = 'hackathon_start_time'";
+$result = $mysqli->query($settings_sql);
+if ($result && $row = $result->fetch_assoc()) {
+    $hackathon_start_time = intval($row['setting_value']);
+}
+
+$event_start_timestamp = strtotime('2026-02-07 10:00:00');
+$time_remaining = 0;
+$timer_label = "Waiting for Start";
+$timer_running = false;
+
+if ($hackathon_start_time) {
+    $hackathon_end = $hackathon_start_time + (24 * 60 * 60);
+    if ($current_time < $hackathon_end) {
+        $time_remaining = $hackathon_end - $current_time;
+        $timer_label = "Time Remaining";
+        $timer_running = true;
+    } else {
+        $time_remaining = 0;
+        $timer_label = "Hackathon Ended";
+    }
+} else {
+    if ($current_time < $event_start_timestamp) {
+        $time_remaining = $event_start_timestamp - $current_time;
+        $timer_label = "Starts In";
+        $timer_running = true;
+    } else {
+        $elapsed = $current_time - $event_start_timestamp;
+        $interval = 30 * 60;
+        $next_target = $event_start_timestamp + (floor($elapsed / $interval) + 1) * $interval;
+        $time_remaining = $next_target - $current_time;
+        $timer_label = "Starts In";
+        $timer_running = true;
+    }
+}
+
+$hours = floor($time_remaining / 3600);
+$minutes = floor(($time_remaining % 3600) / 60);
+$seconds = $time_remaining % 60;
+$time_display = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+?>
 <!DOCTYPE html>
 <html lang="en" class="dark scroll-smooth scroll-pt-24">
 <head>
@@ -106,6 +154,15 @@
             <h2 class="text-3xl md:text-5xl font-display font-bold text-gray-800 dark:text-white mb-8 uppercase tracking-wide">
                 Using Artificial Intelligence
             </h2>
+            <div class="mb-12 relative group max-w-4xl mx-auto">
+                 <div class="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-secondary/10 opacity-50 group-hover:opacity-75 transition-opacity duration-500 rounded-2xl"></div>
+                 <div class="relative flex flex-col items-center justify-center p-6 rounded-2xl bg-surface-dark/40 border border-white/5 backdrop-blur-sm">
+                    <h3 class="text-primary font-bold uppercase tracking-[0.3em] text-xs md:text-sm mb-2"><?php echo $timer_label; ?></h3>
+                    <div class="font-mono font-bold text-6xl md:text-7xl lg:text-8xl text-[#04d9ff] tracking-tighter drop-shadow-[#04d9ff_0_0_25px] tabular-nums transition-all duration-300 hover:scale-105 hover:drop-shadow-[#04d9ff_0_0_35px] opacity-90" id="indexTimer">
+                        <?php echo $time_display; ?>
+                    </div>
+                 </div>
+            </div>
             <div class="max-w-2xl mx-auto bg-white dark:bg-surface-dark rounded-xl shadow-xl overflow-hidden mb-12 border border-gray-200 dark:border-gray-700">
                 <img src="assets/image/poster.jpg" alt="Event Poster" class="w-full h-auto object-cover">
                 <div class="p-8">
@@ -353,6 +410,35 @@
                 });
             });
         }
+
+        const isRunning = <?php echo $timer_running ? 'true' : 'false'; ?>;
+        const initialRemaining = <?php echo $time_remaining; ?>;
+        const endTime = Date.now() + (initialRemaining * 1000);
+
+        function updateCountdown() {
+            if (!isRunning) {
+                const countdownEl = document.getElementById('indexTimer');
+                if (countdownEl) countdownEl.textContent = '--:--:--';
+                return;
+            }
+
+            const now = Date.now();
+            const remaining = Math.max(0, endTime - now);
+
+            const hours = Math.floor(remaining / (1000 * 60 * 60));
+            const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+
+            const display = String(hours).padStart(2, '0') + ':' +
+                String(minutes).padStart(2, '0') + ':' +
+                String(seconds).padStart(2, '0');
+
+            const countdownEl = document.getElementById('indexTimer');
+            if (countdownEl) countdownEl.textContent = display;
+        }
+
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
     </script>
 </body>
 </html>

@@ -56,7 +56,7 @@ if ($result) {
     }
 }
 
-$event_start_timestamp = strtotime('2026-02-07 10:00:00');
+$event_start_timestamp = strtotime('2026-02-07   10:00:00');
 $time_remaining = 0;
 $timer_label = "Waiting for Start";
 $progress_percentage = 0;
@@ -81,8 +81,12 @@ if ($hackathon_start_time) {
         $timer_label = "Starts In";
         $timer_running = true;
     } else {
-        $timer_label = "Starts Soon";
-        $time_remaining = 0;
+        $elapsed = $current_time - $event_start_timestamp;
+        $interval = 30 * 60;
+        $next_target = $event_start_timestamp + (floor($elapsed / $interval) + 1) * $interval;
+        $time_remaining = $next_target - $current_time;
+        $timer_label = "Starts In";
+        $timer_running = true;
     }
 }
 
@@ -265,7 +269,7 @@ if ($res = $mysqli->query($sub_check_sql)) {
                 <div class="flex items-center space-x-4">
                     <div class="text-right">
                         <p class="text-[10px] uppercase font-bold text-muted-dark tracking-widest"><?php echo $timer_label; ?></p>
-                        <p class="text-xl font-mono font-bold text-primary" id="countdown">
+                        <p class="text-4xl md:text-5xl font-mono font-bold text-[#04d9ff] tracking-tighter drop-shadow-[0_0_10px_rgba(4,217,255,0.5)]" id="countdown">
                             <?php echo htmlspecialchars($time_display, ENT_QUOTES, 'UTF-8'); ?></p>
                     </div>
                 </div>

@@ -93,7 +93,7 @@ if ($ps_released) {
             $count_stmt->close();
             
             $row['selected_count'] = $count_row['count'];
-            $row['available_slots'] = max(0, 20 - $count_row['count']);
+            $row['available_slots'] = max(0, $row['slot'] - $count_row['count']);
             $problem_statements[] = $row;
         }
     }
@@ -303,7 +303,7 @@ $initials = strtoupper(substr($team['leader_name'], 0, 1) . substr(explode(' ', 
                                     <span
                                         class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold <?php echo $ps['available_slots'] > 0 ? 'bg-emerald-900/40 text-emerald-300' : 'bg-red-900/40 text-red-300'; ?>">
                                         <?php echo htmlspecialchars($ps['available_slots'], ENT_QUOTES, 'UTF-8'); ?> /
-                                        20
+                                        <?php echo htmlspecialchars($ps['slot'], ENT_QUOTES, 'UTF-8'); ?>
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-center">

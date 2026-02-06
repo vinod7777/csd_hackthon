@@ -82,6 +82,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         }
     }
 
+    if ($_POST['action'] === 'edit_ps') {
+        $ps_id = intval($_POST['ps_id'] ?? 0);
+        $sno = intval($_POST['sno'] ?? 0);
+        $stmt_name = trim($_POST['stmt_name'] ?? '');
+        $description = trim($_POST['description'] ?? '');
+        $slot = intval($_POST['slot'] ?? 0);
+
+        if ($ps_id > 0 && $sno > 0 && !empty($stmt_name) && !empty($description) && $slot > 0) {
+            $update_sql = 'UPDATE problem_statements SET sno = ?, stmt_name = ?, description = ?, slot = ? WHERE id = ?';
+            if ($stmt = $mysqli->prepare($update_sql)) {
+                $stmt->bind_param('issii', $sno, $stmt_name, $description, $slot, $ps_id);
+                if ($stmt->execute()) $message = 'Problem statement updated successfully!'; $message_type = 'success';
+                $stmt->close();
+            }
+        }
+    }
+
     if ($_POST['action'] === 'import_csv' && isset($_FILES['csv_file'])) {
         $file = $_FILES['csv_file']['tmp_name'];
         if (file_exists($file)) {
@@ -444,10 +461,10 @@ if ($result) {
                                                 <?php echo htmlspecialchars($ps['description']); ?>
                                             </td>
                                             <td class="px-6 py-4 text-sm text-white">
-                                                <?php $remaining = max(0, 20 - $ps['selected_count']); ?>
+                                                <?php $remaining = max(0, $ps['slot'] - $ps['selected_count']); ?>
                                                 <span
                                                     class="<?php echo $remaining === 0 ? 'text-red-400 font-bold' : 'text-emerald-400'; ?>"><?php echo $remaining; ?></span>
-                                                / 20
+                                                / <?php echo htmlspecialchars($ps['slot']); ?>
                                             </td>
                                             <td class="px-6 py-4">
                                                 <span
@@ -456,6 +473,9 @@ if ($result) {
                                                 </span>
                                             </td>
                                             <td class="px-6 py-4 text-right whitespace-nowrap" onclick="event.stopPropagation()">
+                                                <button onclick="openEditModal(<?php echo htmlspecialchars(json_encode($ps), ENT_QUOTES, 'UTF-8'); ?>)" class="p-2 hover:bg-blue-900/30 rounded-lg text-text-muted hover:text-blue-400 transition-colors mr-1" title="Edit">
+                                                    <span class="material-symbols-outlined text-[20px]">edit</span>
+                                                </button>
                                                 <form method="POST" class="inline-block">
                                                     <input type="hidden" name="action" value="toggle_active" />
                                                     <input type="hidden" name="ps_id"
@@ -508,6 +528,19 @@ if ($result) {
         mobileBtn.addEventListener('click', () => {
             sidebar.classList.toggle('hidden');
         });
+    }
+
+    function openEditModal(ps) {
+        document.getElementById('edit_ps_id').value = ps.id;
+        document.getElementById('edit_sno').value = ps.sno;
+        document.getElementById('edit_stmt_name').value = ps.stmt_name;
+        document.getElementById('edit_description').value = ps.description;
+        document.getElementById('edit_slot').value = ps.slot;
+        document.getElementById('editPSModal').classList.remove('hidden');
+    }
+    function closeEditModal(event) {
+        if (event && event.target.id !== 'editPSModal' && !event.target.closest('button')) return;
+        document.getElementById('editPSModal').classList.add('hidden');
     }
 
     function updateAdminTimer() {
@@ -648,6 +681,96 @@ if ($result) {
 
   
     </script>
+
+    <!-- Edit PS Modal -->
+    <div id="editPSModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4" onclick="closeEditModal(event)">
+        <div class="bg-surface-dark border border-border-dark rounded-2xl shadow-2xl w-full max-w-lg flex flex-col" onclick="event.stopPropagation()">
+            <div class="bg-gradient-to-r from-primary to-secondary/50 p-6 border-b border-border-dark flex items-center justify-between">
+                <h3 class="text-lg font-bold text-white">Edit Problem Statement</h3>
+                <button onclick="closeEditModal()" class="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                    <span class="material-symbols-outlined text-white">close</span>
+                </button>
+            </div>
+            <form method="POST" class="p-6 flex flex-col gap-4">
+                <input type="hidden" name="action" value="edit_ps" />
+                <input type="hidden" name="ps_id" id="edit_ps_id" />
+                <div>
+                    <label class="block text-sm font-medium text-text-muted mb-2">S.No</label>
+                    <input type="number" name="sno" id="edit_sno" class="w-full px-4 py-2 bg-background-dark border border-border-dark rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-primary" required />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-muted mb-2">Title</label>
+                    <input type="text" name="stmt_name" id="edit_stmt_name" class="w-full px-4 py-2 bg-background-dark border border-border-dark rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-primary" required />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-muted mb-2">Description</label>
+                    <textarea name="description" id="edit_description" rows="4" class="w-full px-4 py-2 bg-background-dark border border-border-dark rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-primary" required></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-muted mb-2">Total Slots</label>
+                    <input type="number" name="slot" id="edit_slot" class="w-full px-4 py-2 bg-background-dark border border-border-dark rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-primary" required min="1" max="20" />
+                </div>
+                <div class="flex gap-3 mt-4">
+                    <button type="button" onclick="closeEditModal()" class="flex-1 px-4 py-2.5 border border-border-dark hover:bg-white/5 text-text-muted font-medium rounded-lg transition-colors">Cancel</button>
+                    <button type="submit" class="flex-1 px-4 py-2.5 bg-primary hover:bg-primary/80 text-white font-medium rounded-lg transition-colors">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Release Animation Overlay -->
+    <div id="releaseOverlay" class="fixed inset-0 z-[100] bg-black/95 hidden flex flex-col items-center justify-center backdrop-blur-sm">
+        <!-- Timer -->
+        <div id="releaseTimer" class="hidden flex flex-col items-center justify-center">
+            <img src="../assets/image/25.png" class="w-48 h-48 md:w-64 md:h-64 object-contain animate-spin-3d mb-8 drop-shadow-[0_0_50px_rgba(59,130,246,0.6)]">
+            <div id="timerCount" class="text-[100px] md:text-[150px] font-black text-white font-display tracking-tighter animate-pulse">
+                5
+            </div>
+            <div id="startedText" class="hidden text-4xl md:text-6xl font-bold text-white mt-12 animate-bounce text-center tracking-tight drop-shadow-[0_0_25px_rgba(255,255,255,0.5)]">
+                Hackathon Started!
+            </div>
+            <div id="successSoundContainer" class="absolute bottom-4 right-4 opacity-0 pointer-events-none"></div>
+        </div>
+    </div>
+          
+  l
+    </script>
+
+    <!-- Edit PS Modal -->
+    <div id="editPSModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4" onclick="closeEditModal(event)">
+        <div class="bg-surface-dark border border-border-dark rounded-2xl shadow-2xl w-full max-w-lg flex flex-col" onclick="event.stopPropagation()">
+            <div class="bg-gradient-to-r from-primary to-secondary/50 p-6 border-b border-border-dark flex items-center justify-between">
+                <h3 class="text-lg font-bold text-white">Edit Problem Statement</h3>
+                <button onclick="closeEditModal()" class="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                    <span class="material-symbols-outlined text-white">close</span>
+                </button>
+            </div>
+            <form method="POST" class="p-6 flex flex-col gap-4">
+                <input type="hidden" name="action" value="edit_ps" />
+                <input type="hidden" name="ps_id" id="edit_ps_id" />
+                <div>
+                    <label class="block text-sm font-medium text-text-muted mb-2">S.No</label>
+                    <input type="number" name="sno" id="edit_sno" class="w-full px-4 py-2 bg-background-dark border border-border-dark rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-primary" required />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-muted mb-2">Title</label>
+                    <input type="text" name="stmt_name" id="edit_stmt_name" class="w-full px-4 py-2 bg-background-dark border border-border-dark rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-primary" required />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-muted mb-2">Description</label>
+                    <textarea name="description" id="edit_description" rows="4" class="w-full px-4 py-2 bg-background-dark border border-border-dark rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-primary" required></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-muted mb-2">Total Slots</label>
+                    <input type="number" name="slot" id="edit_slot" class="w-full px-4 py-2 bg-background-dark border border-border-dark rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-primary" required min="1" max="20" />
+                </div>
+                <div class="flex gap-3 mt-4">
+                    <button type="button" onclick="closeEditModal()" class="flex-1 px-4 py-2.5 border border-border-dark hover:bg-white/5 text-text-muted font-medium rounded-lg transition-colors">Cancel</button>
+                    <button type="submit" class="flex-1 px-4 py-2.5 bg-primary hover:bg-primary/80 text-white font-medium rounded-lg transition-colors">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Release Animation Overlay -->
     <div id="releaseOverlay" class="fixed inset-0 z-[100] bg-black/95 hidden flex flex-col items-center justify-center backdrop-blur-sm">
