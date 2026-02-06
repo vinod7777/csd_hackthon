@@ -32,12 +32,8 @@ if ($hackathon_start_time) {
         $timer_label = "Starts In";
         $timer_running = true;
     } else {
-        $elapsed = $current_time - $event_start_timestamp;
-        $interval = 30 * 60;
-        $next_target = $event_start_timestamp + (floor($elapsed / $interval) + 1) * $interval;
-        $time_remaining = $next_target - $current_time;
-        $timer_label = "Starts In";
-        $timer_running = true;
+        $timer_label = "Starts Soon";
+        $time_remaining = 0;
     }
 }
 
