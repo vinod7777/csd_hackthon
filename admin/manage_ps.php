@@ -478,7 +478,15 @@ if ($result) {
         });
     }
 
+    let isReleaseSequenceRunning = false;
+    const tickSound = new Audio('../assets/sounds/count.mpeg');
+    const confettiSound = new Audio('../assets/sounds/confetti.mp3');
+    tickSound.volume = 1.0;
+
     function startReleaseSequence() {
+        if (isReleaseSequenceRunning) return;
+        isReleaseSequenceRunning = true;
+
         const overlay = document.getElementById('releaseOverlay');
         const timer = document.getElementById('releaseTimer');
         const timerCount = document.getElementById('timerCount');
@@ -505,6 +513,9 @@ if ($result) {
         const duration = 5000;
         const end = Date.now() + duration;
 
+        confettiSound.currentTime = 0;
+        confettiSound.play().catch(e => console.log('Confetti audio play failed:', e));
+
         (function frame() {
             confetti({
                 particleCount: 7,
@@ -529,15 +540,20 @@ if ($result) {
         let count = 5;
         if(timerCount) timerCount.textContent = count;
         
+        // Play initial tick
+        tickSound.volume = 1.0;
+        tickSound.currentTime = 0;
+        tickSound.play().catch(e => console.log('Audio play failed:', e));
+        
         const interval = setInterval(() => {
             count--;
             if (count > 0) {
                 if(timerCount) timerCount.textContent = count;
                 if(logo) {
                     // Slow down animation as countdown progresses
-                    if(count === 4) logo.style.animationDuration = '0.5s';
-                    if(count === 3) logo.style.animationDuration = '1.0s';
-                    if(count === 2) logo.style.animationDuration = '1.8s';
+                    if(count === 4) logo.style.animationDuration = '1s';
+                    if(count === 3) logo.style.animationDuration = '1.8s';
+                    if(count === 2) logo.style.animationDuration = '2.5s';
                     if(count === 1) logo.style.animationDuration = '3.0s';
                 }
             } else {
@@ -601,6 +617,7 @@ if ($result) {
             <div id="startedText" class="hidden text-4xl md:text-6xl font-bold text-white mt-12 animate-bounce text-center tracking-tight drop-shadow-[0_0_25px_rgba(255,255,255,0.5)]">
                 Hackathon Started!
             </div>
+            <div id="successSoundContainer" class="absolute bottom-4 right-4 opacity-0 pointer-events-none"></div>
         </div>
     </div>
 </body>
