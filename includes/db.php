@@ -1,15 +1,15 @@
 <?php
 
 
-$DB_HOST = '127.0.0.1';
+$DB_HOST = 'localhost';
 $DB_USER = 'root';
 $DB_PASS = '';
 $DB_NAME = 'user';
-$DB_PORT = 3307;
+
 
 mysqli_report(MYSQLI_REPORT_OFF);
 
-$mysqli = new mysqli($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME, $DB_PORT);
+$mysqli = new mysqli($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME);
 
 if ($mysqli->connect_errno) {
     die('Failed to connect to MySQL: (' . $mysqli->connect_errno . ') ' . $mysqli->connect_error);

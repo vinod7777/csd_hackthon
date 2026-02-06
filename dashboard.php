@@ -39,27 +39,57 @@ if ($stmt = $mysqli->prepare($members_sql)) {
     $stmt->close();
 }
 
-$registration_time = strtotime($team['created_at']);
-$hackathon_start = strtotime('2026-02-07 10:00:00');
 $current_time = time();
+$hackathon_start_time = null;
+$ps_released_timer = false;
 
-if ($current_time < $hackathon_start) {
-    $time_remaining = $hackathon_start - $current_time;
-    $timer_label = "Starts In";
+$settings_sql = "SELECT setting_key, setting_value FROM admin_settings WHERE setting_key IN ('release_ps', 'hackathon_start_time')";
+$result = $mysqli->query($settings_sql);
+if ($result) {
+    while ($row = $result->fetch_assoc()) {
+        if ($row['setting_key'] === 'release_ps') {
+            $ps_released_timer = ($row['setting_value'] === '1' || $row['setting_value'] === 'true');
+        }
+        if ($row['setting_key'] === 'hackathon_start_time') {
+            $hackathon_start_time = intval($row['setting_value']);
+        }
+    }
+}
+
+$event_start_timestamp = strtotime('2026-02-07 10:00:00');
+$time_remaining = 0;
+$timer_label = "Waiting for Start";
+$progress_percentage = 0;
+$timer_running = false;
+
+if ($hackathon_start_time) {
+    $hackathon_end = $hackathon_start_time + (24 * 60 * 60);
+    if ($current_time < $hackathon_end) {
+        $time_remaining = $hackathon_end - $current_time;
+        $timer_label = "Time Remaining";
+        $elapsed = $current_time - $hackathon_start_time;
+        $progress_percentage = ($elapsed / (24 * 60 * 60)) * 100;
+        $timer_running = true;
+    } else {
+        $time_remaining = 0;
+        $timer_label = "Hackathon Ended";
+        $progress_percentage = 100;
+    }
 } else {
-    $hackathon_end = $hackathon_start + (24 * 60 * 60);
-    $time_remaining = max(0, $hackathon_end - $current_time);
-    $timer_label = "Time Remaining";
+    if ($current_time < $event_start_timestamp) {
+        $time_remaining = $event_start_timestamp - $current_time;
+        $timer_label = "Starts In";
+        $timer_running = true;
+    } else {
+        $timer_label = "Starts Soon";
+        $time_remaining = 0;
+    }
 }
 
 $hours = floor($time_remaining / 3600);
 $minutes = floor(($time_remaining % 3600) / 60);
 $seconds = $time_remaining % 60;
 $time_display = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
-
-$time_elapsed = $current_time - $registration_time;
-$total_duration = 24 * 60 * 60; 
-$progress_percentage = min(100, ($time_elapsed / $total_duration) * 100);
 
 $current_stage = 'registration';
 if ($progress_percentage >= 5) {
@@ -472,10 +502,17 @@ if ($res = $mysqli->query($sub_check_sql)) {
     </div>
 
     <script>
+    const isRunning = <?php echo $timer_running ? 'true' : 'false'; ?>;
     const initialRemaining = <?php echo $time_remaining; ?>;
     const endTime = Date.now() + (initialRemaining * 1000);
 
     function updateCountdown() {
+        if (!isRunning) {
+            const countdownEl = document.getElementById('countdown');
+            if (countdownEl) countdownEl.textContent = '--:--:--';
+            return;
+        }
+
         const now = Date.now();
         const remaining = Math.max(0, endTime - now);
 

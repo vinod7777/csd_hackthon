@@ -22,6 +22,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $message = $status ? 'Problem Statements are now RELEASED!' : 'Problem Statements are now HIDDEN!';
                 $message_type = 'success';
                 
+                if ($status) {
+                    $now = time();
+                    $mysqli->query("INSERT INTO admin_settings (setting_key, setting_value) VALUES ('hackathon_start_time', '$now') ON DUPLICATE KEY UPDATE setting_value = '$now'");
+                }
+
                 if (isset($_POST['ajax'])) {
                     header('Content-Type: application/json');
                     echo json_encode(['status' => 'success', 'message' => $message]);
@@ -120,6 +125,13 @@ $check_sql = "SELECT setting_value FROM admin_settings WHERE setting_key = 'ps_e
 $result = $mysqli->query($check_sql);
 if ($result && $row = $result->fetch_assoc()) {
     $ps_enabled = ($row['setting_value'] === '1' || $row['setting_value'] === 'true');
+}
+
+$hackathon_start_time = 0;
+$check_sql = "SELECT setting_value FROM admin_settings WHERE setting_key = 'hackathon_start_time' LIMIT 1";
+$result = $mysqli->query($check_sql);
+if ($result && $row = $result->fetch_assoc()) {
+    $hackathon_start_time = intval($row['setting_value']);
 }
 
 // Fetch settings for sidebar
@@ -281,8 +293,27 @@ if ($result) {
             </div>
         </header>
         <div class="flex-1 flex overflow-hidden">
+           
             <div class="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12 scroll-smooth">
                 <div class="max-w-6xl mx-auto space-y-8 pb-20">
+                    <?php if ($hackathon_start_time > 0): ?>
+                    <div class="relative w-full p-6 md:p-8 rounded-2xl bg-surface-dark/40 border border-white/5 shadow-2xl backdrop-blur-sm overflow-hidden group">
+                        <div class="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-secondary/10 opacity-50 group-hover:opacity-75 transition-opacity duration-500"></div>
+                        <div class="relative flex flex-col items-center justify-center">
+                            <h3 class="text-primary font-bold uppercase tracking-[0.3em] text-xs md:text-sm mb-2">Hackathon Live Timer</h3>
+                            <div class="font-mono font-bold text-6xl md:text-7xl lg:text-8xl text-[#04d9ff] tracking-tighter drop-shadow-[#04d9ff_0_0_25px] tabular-nums transition-all duration-300 hover:scale-105 hover:drop-shadow-[#04d9ff_0_0_35px] opacity-90 adminTimer" id="adminTimerBig">
+                                --:--:--
+                            </div>
+                            <div class="mt-2 flex items-center gap-2">
+                                <span class="relative flex h-3 w-3">
+                                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                  <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                                </span>
+                                <span class="text-text-muted text-xs font-medium uppercase tracking-wider">Hackthon Active</span>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endif; ?>
                     <?php if (isset($_GET['logout'])) { session_destroy(); header('Location: manage_ps.php'); exit; } ?>
 
                     <?php if ($message): ?>
@@ -314,6 +345,7 @@ if ($result) {
                                         <span class="material-symbols-outlined" style="font-size:20px;">check_circle</span>
                                         Released
                                     </button>
+                                   
                                     <form method="POST" onsubmit="return confirm('Are you sure you want to hide problem statements?');">
                                         <input type="hidden" name="action" value="toggle_release" />
                                         <input type="hidden" name="release_status" value="0" />
@@ -478,6 +510,26 @@ if ($result) {
         });
     }
 
+    function updateAdminTimer() {
+        const startTime = <?php echo $hackathon_start_time ? $hackathon_start_time : '0'; ?>;
+        
+        if (!startTime) return;
+        
+        const now = Math.floor(Date.now() / 1000);
+        const endTime = startTime + (24 * 60 * 60);
+        const remaining = Math.max(0, endTime - now);
+        
+        const hours = Math.floor(remaining / 3600);
+        const minutes = Math.floor((remaining % 3600) / 60);
+        const seconds = remaining % 60;
+        
+        const display = String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+        const timerEls = document.querySelectorAll('.adminTimer');
+        timerEls.forEach(el => el.textContent = display);
+    }
+    setInterval(updateAdminTimer, 1000);
+    updateAdminTimer();
+
     let isReleaseSequenceRunning = false;
     const tickSound = new Audio('../assets/sounds/count.mpeg');
     const confettiSound = new Audio('../assets/sounds/confetti.mp3');
@@ -486,6 +538,20 @@ if ($result) {
     function startReleaseSequence() {
         if (isReleaseSequenceRunning) return;
         isReleaseSequenceRunning = true;
+
+        // Trigger AJAX immediately to store start time
+        const formData = new FormData();
+        formData.append('action', 'toggle_release');
+        formData.append('release_status', '1');
+        formData.append('ajax', '1');
+        
+        fetch('manage_ps.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => { if (data.status !== 'success') console.error(data.message); })
+        .catch(err => console.error(err));
 
         const overlay = document.getElementById('releaseOverlay');
         const timer = document.getElementById('releaseTimer');
@@ -572,33 +638,10 @@ if ($result) {
                 
                 if(startedText) startedText.classList.remove('hidden');
                 
-                // Trigger AJAX
-                const formData = new FormData();
-                formData.append('action', 'toggle_release');
-                formData.append('release_status', '1');
-                formData.append('ajax', '1');
-                
-                fetch('manage_ps.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        // Show logo for 3 seconds then reload
-                        setTimeout(() => {
-                            location.reload();
-                        }, 3000);
-                    } else {
-                        alert('Error: ' + (data.message || 'Unknown error'));
-                        location.reload();
-                    }
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert('Request failed. Please check console.');
+                // Show logo for 3 seconds then reload
+                setTimeout(() => {
                     location.reload();
-                });
+                }, 3000);
             }
         }, 1000);
     }
